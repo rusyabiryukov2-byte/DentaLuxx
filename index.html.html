@@ -2,6 +2,13 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
+<!-- Ставим класс js максимально рано (до отрисовки body), чтобы ниже в CSS
+     панель #curtainNext сразу рендерилась в position:fixed без "прыжка" —
+     раньше это переключение делал JS уже после отрисовки в потоке, из-за
+     чего Lighthouse фиксировал заметный layout shift (CLS 0.16). Без JS
+     класс не добавится, и панель останется в обычном потоке (position:relative)
+     — доступной без скриптов. -->
+<script>document.documentElement.className += ' js';</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DentaLux — стоматология премиум-класса</title>
 <meta name="description" content="DentaLux — стоматология премиум-класса в Киеве. Импланты, терапия, ортодонтия и детская стоматология. Бесплатная консультация, честные цены.">
@@ -38,9 +45,9 @@
      блокировать отрисовку страницы — экономит ~2с на LCP/FCP по данным
      PageSpeed. Поведение и внешний вид шрифтов не меняются, только момент
      их применения (font-display:swap уже был в исходном запросе). -->
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap">
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-<noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=optional">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=optional" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=optional" rel="stylesheet"></noscript>
 
 <!-- GA4: вставити тег тут -->
 <!-- Meta Pixel: вставити тут -->
@@ -303,6 +310,12 @@ header{position:sticky;top:0;z-index:100;padding:16px 0;transition:opacity .25s 
 .curtain-pin .wrap{width:100%;}
 .curtain-spacer{height:0;}
 .curtain-next{position:relative;z-index:5;border-radius:48px 48px 0 0;will-change:transform;}
+/* Как только доступен JS (класс ставится в <head>, см. выше) — панель сразу
+   рендерится в position:fixed, скрытой за нижним краем экрана. Раньше это
+   переключение делал JS уже ПОСЛЕ отрисовки блока в обычном потоке, что и
+   вызывало заметный сдвиг макета (CLS). Теперь сдвига нет: блок никогда не
+   существует "в потоке" на экране JS-пользователя. */
+html.js .curtain-next{position:fixed;top:0;left:0;right:0;margin:0;transform:translateY(100vh);}
 .curtain-next::before{border-radius:48px 48px 0 0;}
 .curtain-next .cta-footer-bg::after{border-radius:48px 48px 0 0;}
 
@@ -1139,7 +1152,12 @@ document.addEventListener('DOMContentLoaded', function(){
   var resizeTimer;
   function handleResize(){
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(function(){ setVh(); measure(); }, 150);
+    // setVh() пишет CSS-переменную --vh, от которой зависит высота #hero-scroll
+    // (calc(var(--vh)...)) — если сразу после читать offsetTop/offsetHeight в
+    // measure(), браузер вынужден пересчитать layout синхронно (forced reflow).
+    // requestAnimationFrame даёт браузеру пересчитать это естественным образом
+    // перед следующим кадром — тот же результат, без принудительного пересчёта.
+    resizeTimer = setTimeout(function(){ setVh(); requestAnimationFrame(measure); }, 150);
   }
   window.addEventListener('resize', handleResize);
   if(window.visualViewport){
@@ -1180,33 +1198,16 @@ document.addEventListener('DOMContentLoaded', function(){
   var SLIDE_RATIO = 0.45; // доля vh на сам наезд — меньше = быстрее и короче
   var vh = 0, trackTop = 0, holdDist = 0, slideDist = 0, releaseDist = 0, totalTrack = 0;
 
-  function forceFixed(){
-    nextEl.style.position = 'fixed';
-    nextEl.style.top      = '0';
-    nextEl.style.left     = '0';
-    nextEl.style.right    = '0';
-    nextEl.style.margin   = '0';
-  }
-
   function measure(){
     vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
 
-    // Читаем позицию pinEl СРАЗУ, до того как ниже сбрасываем стили nextEl —
-    // иначе этот read вынужден ждать пересчёта layout, вызванного тем сбросом
-    // (forced reflow). Порядок здесь: сначала все чтения, потом все записи.
     var scrollYNow = window.scrollY || window.pageYOffset;
     trackTop = pinEl.getBoundingClientRect().top + scrollYNow;
 
-    // натуральную высоту панели меряем без fixed/transform, иначе
-    // получим не ту высоту (пока считаем — на миг снимаем оверрайды).
-    // Здесь один неизбежный forced reflow (нужно свежее значение offsetHeight
-    // после сброса стилей) — но теперь он единственный в этой функции.
-    nextEl.style.position  = '';
-    nextEl.style.top       = '';
-    nextEl.style.left      = '';
-    nextEl.style.right     = '';
-    nextEl.style.margin    = '';
-    nextEl.style.transform = '';
+    // position:fixed теперь задаётся в CSS (html.js .curtain-next) с самого
+    // первого рендера — JS больше не переключает его на лету, поэтому можно
+    // просто прочитать offsetHeight напрямую, без сброса стилей (transform
+    // на layout-размер не влияет, а position уже не меняется по ходу).
     var naturalH = nextEl.offsetHeight;
 
     slideDist   = vh * SLIDE_RATIO;
@@ -1215,7 +1216,6 @@ document.addEventListener('DOMContentLoaded', function(){
     totalTrack  = holdDist + slideDist + releaseDist;
     spacerEl.style.height = totalTrack + 'px';
 
-    forceFixed();
     updatePosition(scrollYNow);
   }
 
@@ -1261,7 +1261,7 @@ document.addEventListener('DOMContentLoaded', function(){
   var resizeTimer;
   function handleResize(){
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(measure, 150);
+    resizeTimer = setTimeout(function(){ requestAnimationFrame(measure); }, 150);
   }
   window.addEventListener('resize', handleResize);
   if(window.visualViewport){
