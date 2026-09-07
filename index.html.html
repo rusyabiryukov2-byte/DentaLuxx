@@ -34,7 +34,13 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- Шрифты подключены асинхронно (preload + media=print → all), чтобы не
+     блокировать отрисовку страницы — экономит ~2с на LCP/FCP по данным
+     PageSpeed. Поведение и внешний вид шрифтов не меняются, только момент
+     их применения (font-display:swap уже был в исходном запросе). -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
 
 <!-- GA4: вставити тег тут -->
 <!-- Meta Pixel: вставити тут -->
@@ -1070,9 +1076,8 @@ document.addEventListener('DOMContentLoaded', function(){
     trackHeight = heroScroll.offsetHeight - window.innerHeight;
   }
 
-  function readScroll(){
+  function readScroll(scrollY){
     if(trackHeight <= 0) { rawProgress = 0; return; }
-    var scrollY = window.scrollY || window.pageYOffset;
     rawProgress = Math.max(0, Math.min(1, (scrollY - trackTop) / trackHeight));
   }
 
@@ -1109,20 +1114,27 @@ document.addEventListener('DOMContentLoaded', function(){
     }
   }
 
-  function frame(){
-    readScroll();
+  // tick(scrollY) вызывается общим координатором (см. блок ниже, после
+  // curtain-скрипта) — единый requestAnimationFrame на всю страницу вместо
+  // отдельного цикла на каждый скролл-эффект. Это устраняет forced reflow:
+  // раньше несколько независимых rAF-циклов читали window.scrollY вперемешку
+  // с чужими записями стилей в одном и том же кадре, что вынуждало браузер
+  // пересчитывать layout синхронно (см. Lighthouse → "Принудительная компоновка").
+  // Теперь scrollY читается один раз за кадр, до всех записей стилей.
+  function tick(scrollY){
+    readScroll(scrollY);
     // Плавно "доводим" отображаемый прогресс до реального — инерционный,
     // более плавный отклик вместо мгновенной привязки к скроллу.
     smoothProgress += (rawProgress - smoothProgress) * SMOOTH;
     if(Math.abs(rawProgress - smoothProgress) < 0.0004) smoothProgress = rawProgress;
     update();
-    requestAnimationFrame(frame);
   }
+  window.__heroTick = tick;
 
   measure();
-  readScroll();
+  var heroInitScrollY = window.scrollY || window.pageYOffset;
+  readScroll(heroInitScrollY);
   smoothProgress = rawProgress;
-  requestAnimationFrame(frame);
 
   var resizeTimer;
   function handleResize(){
@@ -1179,8 +1191,16 @@ document.addEventListener('DOMContentLoaded', function(){
   function measure(){
     vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
 
+    // Читаем позицию pinEl СРАЗУ, до того как ниже сбрасываем стили nextEl —
+    // иначе этот read вынужден ждать пересчёта layout, вызванного тем сбросом
+    // (forced reflow). Порядок здесь: сначала все чтения, потом все записи.
+    var scrollYNow = window.scrollY || window.pageYOffset;
+    trackTop = pinEl.getBoundingClientRect().top + scrollYNow;
+
     // натуральную высоту панели меряем без fixed/transform, иначе
-    // получим не ту высоту (пока считаем — на миг снимаем оверрайды)
+    // получим не ту высоту (пока считаем — на миг снимаем оверрайды).
+    // Здесь один неизбежный forced reflow (нужно свежее значение offsetHeight
+    // после сброса стилей) — но теперь он единственный в этой функции.
     nextEl.style.position  = '';
     nextEl.style.top       = '';
     nextEl.style.left      = '';
@@ -1195,14 +1215,11 @@ document.addEventListener('DOMContentLoaded', function(){
     totalTrack  = holdDist + slideDist + releaseDist;
     spacerEl.style.height = totalTrack + 'px';
 
-    trackTop = pinEl.getBoundingClientRect().top + window.scrollY;
-
     forceFixed();
-    updatePosition();
+    updatePosition(scrollYNow);
   }
 
-  function updatePosition(){
-    var scrollY = window.scrollY || window.pageYOffset;
+  function updatePosition(scrollY){
     var raw = scrollY - trackTop;
     var y;
 
@@ -1232,13 +1249,14 @@ document.addEventListener('DOMContentLoaded', function(){
     }
   }
 
-  function frame(){
-    updatePosition();
-    requestAnimationFrame(frame);
+  // tick(scrollY) вызывается общим координатором ниже — см. комментарий
+  // в hero-скрипте выше про единый requestAnimationFrame на всю страницу.
+  function tick(scrollY){
+    updatePosition(scrollY);
   }
+  window.__curtainTick = tick;
 
   measure();
-  requestAnimationFrame(frame);
 
   var resizeTimer;
   function handleResize(){
@@ -1251,6 +1269,28 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 })();
 </script>
+
+<!-- ══════════════ ОБЩИЙ КООРДИНАТОР СКРОЛЛ-АНИМАЦИЙ ══════════════
+     Раньше hero- и curtain-скрипты выше каждый крутили свой собственный
+     requestAnimationFrame и сами читали window.scrollY. Так как оба rAF
+     выполняются в одном и том же кадре друг за другом, чтение scrollY во
+     втором цикле попадало сразу после записи стилей в первом — браузер был
+     вынужден синхронно пересчитывать layout (Lighthouse: "Принудительная
+     компоновка"). Здесь — один общий цикл: scrollY читается один раз за
+     кадр, до всех записей стилей, и передаётся обоим эффектам. Поведение
+     анимаций не меняется, устраняется только лишний пересчёт layout. -->
+<script>
+(function(){
+  function tick(){
+    var scrollY = window.scrollY || window.pageYOffset;
+    if(window.__heroTick)    window.__heroTick(scrollY);
+    if(window.__curtainTick) window.__curtainTick(scrollY);
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+</script>
+
 <!-- ══════════════ МОДАЛКА "ПОЛНЫЙ ПРАЙС" ══════════════ -->
 <div class="modal-overlay" id="priceModalOverlay" onclick="if(event.target===this)closePriceModal();">
   <div class="modal-box glass" role="dialog" aria-modal="true" aria-labelledby="priceModalTitle">
