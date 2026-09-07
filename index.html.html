@@ -644,10 +644,17 @@ document.addEventListener('DOMContentLoaded', function(){
   }
   window.__heroTick = tick;
 
-  measure();
-  var heroInitScrollY = window.scrollY || window.pageYOffset;
-  readScroll(heroInitScrollY);
-  smoothProgress = rawProgress;
+  // Первый вызов measure() тоже переносим в requestAnimationFrame: если читать
+  // offsetTop/offsetHeight сразу же синхронно во время выполнения скрипта
+  // (до того, как браузер сам успел посчитать layout после парсинга страницы),
+  // это тоже засчитывается как "Принудительная компоновка" в Lighthouse.
+  // rAF даёт браузеру сделать этот же расчёт естественным образом перед кадром.
+  requestAnimationFrame(function(){
+    measure();
+    var heroInitScrollY = window.scrollY || window.pageYOffset;
+    readScroll(heroInitScrollY);
+    smoothProgress = rawProgress;
+  });
 
   var resizeTimer;
   function handleResize(){
@@ -756,7 +763,10 @@ document.addEventListener('DOMContentLoaded', function(){
   }
   window.__curtainTick = tick;
 
-  measure();
+  // Тот же приём, что и в hero-скрипте выше: первый measure() тоже уходит в
+  // requestAnimationFrame, чтобы чтение getBoundingClientRect()/offsetHeight
+  // не засчиталось как принудительная синхронная компоновка сразу при загрузке.
+  requestAnimationFrame(measure);
 
   var resizeTimer;
   function handleResize(){
