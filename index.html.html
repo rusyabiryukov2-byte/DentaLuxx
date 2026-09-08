@@ -641,6 +641,10 @@ document.addEventListener('DOMContentLoaded', function(){
     smoothProgress += (rawProgress - smoothProgress) * SMOOTH;
     if(Math.abs(rawProgress - smoothProgress) < 0.0004) smoothProgress = rawProgress;
     update();
+    // Возвращаем координатору признак "доводка ещё идёт" — пока true, кадры
+    // нужно продолжать; как только smoothProgress догнал rawProgress, цикл
+    // можно останавливать вместо того, чтобы крутить rAF вхолостую вечно.
+    return smoothProgress !== rawProgress;
   }
   window.__heroTick = tick;
 
@@ -704,6 +708,7 @@ document.addEventListener('DOMContentLoaded', function(){
   var HOLD_RATIO  = 0.4; // доля vh на "ожидание" перед наездом — меньше = меньше скролла
   var SLIDE_RATIO = 0.45; // доля vh на сам наезд — меньше = быстрее и короче
   var vh = 0, trackTop = 0, holdDist = 0, slideDist = 0, releaseDist = 0, totalTrack = 0;
+  var lastY = null;
 
   function measure(){
     vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
@@ -739,6 +744,13 @@ document.addEventListener('DOMContentLoaded', function(){
       var into = Math.max(0, Math.min(releaseDist, raw - holdDist - slideDist));
       y = -into;
     }
+
+    // Пока пользователь стоит на месте (или доскроллил до предела), y кадр от
+    // кадра не меняется — раньше это всё равно писало transform/opacity 60
+    // раз в секунду вхолостую. Пропускаем запись стилей, если позиция та же.
+    if(y === lastY) return;
+    lastY = y;
+
     nextEl.style.transform = 'translateY(' + y + 'px)';
 
     // хедер плавно исчезает, когда панель почти/полностью наехала —
@@ -787,17 +799,40 @@ document.addEventListener('DOMContentLoaded', function(){
      втором цикле попадало сразу после записи стилей в первом — браузер был
      вынужден синхронно пересчитывать layout (Lighthouse: "Принудительная
      компоновка"). Здесь — один общий цикл: scrollY читается один раз за
-     кадр, до всех записей стилей, и передаётся обоим эффектам. Поведение
-     анимаций не меняется, устраняется только лишний пересчёт layout. -->
+     кадр, до всех записей стилей, и передаётся обоим эффектам.
+
+     Раньше этот цикл крутился requestAnimationFrame'ом БЕСКОНЕЧНО, даже
+     когда страница просто лежит неподвижно — то есть каждый кадр (60 раз
+     в секунду) писал transform/opacity вхолостую. Из-за этого фонового
+     "шума" любое чтение геометрии в другом месте (например vh-фикс при
+     ресайзе) чаще попадало сразу после чужой записи стиля и заставляло
+     браузер пересчитывать layout синхронно — это и накапливалось в
+     Lighthouse как возросшая "Принудительная компоновка". Теперь цикл
+     запускается по событию scroll и сам себя останавливает, как только
+     hero-эффект сообщает, что инерционная доводка завершилась (curtain
+     мгновенный, доводки не требует) — поведение анимаций не меняется,
+     просто rAF не крутится вхолостую, когда пользователь не скроллит. -->
 <script>
 (function(){
+  var running = false;
   function tick(){
     var scrollY = window.scrollY || window.pageYOffset;
-    if(window.__heroTick)    window.__heroTick(scrollY);
+    var heroStillEasing = window.__heroTick ? window.__heroTick(scrollY) : false;
     if(window.__curtainTick) window.__curtainTick(scrollY);
-    requestAnimationFrame(tick);
+    if(heroStillEasing){
+      requestAnimationFrame(tick);
+    } else {
+      running = false;
+    }
   }
-  requestAnimationFrame(tick);
+  function ensureRunning(){
+    if(!running){
+      running = true;
+      requestAnimationFrame(tick);
+    }
+  }
+  window.addEventListener('scroll', ensureRunning, { passive:true });
+  ensureRunning(); // один проход сразу при загрузке — выставить корректное начальное состояние
 })();
 </script>
 
