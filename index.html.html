@@ -801,6 +801,37 @@ document.addEventListener('DOMContentLoaded', function(){
   }
   window.__curtainTick = tick;
 
+  // Все кнопки/ссылки "Записаться" ведут на href="#contacts". Но #contacts —
+  // это обёртка вокруг #curtainNext, а он position:fixed и не занимает места
+  // в потоке, поэтому САМА секция #contacts в документе схлопнута и физически
+  // находится в самом конце дорожки прокрутки (после hold+slide+release).
+  // Обычный переход по якорю (браузер сам скроллит к #contacts) поэтому
+  // приземляет пользователя не на форму записи (она вверху панели, видна
+  // сразу после slide-фазы), а в САМЫЙ низ футера — на мобильных, где футер
+  // выше экрана (есть release-фаза), это выглядит как "форма не открывается":
+  // видно подвал с копирайтом, а не поля формы. На десктопе, где футер
+  // помещается в экран целиком (release не требуется), это не так заметно —
+  // поэтому баг проявлялся именно "в мобильной версии".
+  // Исправление: перехватываем клики по любым a[href="#contacts"] и скроллим
+  // ровно к моменту "панель полностью надвинулась" (raw = holdDist+slideDist,
+  // y=0) — то есть к началу видимого содержимого формы, а не к концу футера.
+  window.__scrollToContactsForm = function(){
+    if(holdDist === 0 && slideDist === 0){
+      // геометрия ещё не посчиталась (ResizeObserver не успел сработать) —
+      // резервный вариант: обычный переход к секции.
+      var el = document.getElementById('contacts');
+      if(el) el.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    window.scrollTo({ top: trackTop + holdDist + slideDist, behavior: 'smooth' });
+  };
+  document.addEventListener('click', function(e){
+    var link = e.target.closest ? e.target.closest('a[href="#contacts"]') : null;
+    if(!link) return;
+    e.preventDefault();
+    window.__scrollToContactsForm();
+  });
+
   // naturalH (высота #curtainNext) отслеживаем через ResizeObserver вместо
   // опроса offsetHeight — колбэк ResizeObserver браузер вызывает сам и
   // гарантированно уже после пересчёта layout, поэтому чтение внутри него
