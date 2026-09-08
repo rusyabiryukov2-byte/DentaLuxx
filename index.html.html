@@ -551,6 +551,8 @@ document.addEventListener('DOMContentLoaded', function(){
     document.documentElement.style.setProperty('--vh', h + 'px');
   }
   setVh();
+  window.addEventListener('resize', setVh);
+  if(window.visualViewport){ window.visualViewport.addEventListener('resize', setVh); }
 
   // -- Состояние видео --
   var videoReady  = false;
@@ -588,11 +590,26 @@ document.addEventListener('DOMContentLoaded', function(){
   // отображаемый прогресс реальную прокрутку (лёгкая задержка/доводка).
   var SMOOTH = 0.11;
 
-  function measure(){
-    trackTop    = heroScroll.offsetTop;
+  // Раньше trackTop/trackHeight читались опросом offsetTop/offsetHeight из
+  // requestAnimationFrame, вручную вызываемого нами при загрузке и при
+  // resize. Даже через rAF это иногда засчитывалось Lighthouse как
+  // "Принудительная компоновка", потому что мы сами решаем МОМЕНТ чтения —
+  // а браузер тем временем мог ещё не пересчитать layout после наших же
+  // более ранних записей стилей (например setVh()). ResizeObserver устроен
+  // иначе: браузер вызывает колбэк САМ, и гарантированно уже ПОСЛЕ того,
+  // как пересчитал layout для этого элемента — то есть чтение геометрии
+  // внутри колбэка в принципе не может вызвать синхронную принудительную
+  // компоновку. #hero-scroll использует calc(var(--vh)*2.5) в CSS, поэтому
+  // и viewport-resize (меняет --vh), и любой другой реальный реflow этого
+  // блока сами приводят к вызову колбэка — вручную дёргать измерение больше
+  // не нужно ни при загрузке, ни при resize.
+  function recomputeHeroTrack(){
+    var scrollYNow = window.scrollY || window.pageYOffset;
+    var rect = heroScroll.getBoundingClientRect();
+    trackTop    = rect.top + scrollYNow;
     // Дистанция прокрутки, за которую hero остаётся закреплённым:
     // вся высота #hero-scroll минус один экран (тот, что виден, пока hero pinned).
-    trackHeight = heroScroll.offsetHeight - window.innerHeight;
+    trackHeight = rect.height - (window.visualViewport ? window.visualViewport.height : window.innerHeight);
   }
 
   function readScroll(scrollY){
@@ -654,31 +671,34 @@ document.addEventListener('DOMContentLoaded', function(){
   }
   window.__heroTick = tick;
 
-  // Первый вызов measure() тоже переносим в requestAnimationFrame: если читать
-  // offsetTop/offsetHeight сразу же синхронно во время выполнения скрипта
-  // (до того, как браузер сам успел посчитать layout после парсинга страницы),
-  // это тоже засчитывается как "Принудительная компоновка" в Lighthouse.
-  // rAF даёт браузеру сделать этот же расчёт естественным образом перед кадром.
-  requestAnimationFrame(function(){
-    measure();
-    var heroInitScrollY = window.scrollY || window.pageYOffset;
-    readScroll(heroInitScrollY);
-    smoothProgress = rawProgress;
-  });
-
-  var resizeTimer;
-  function handleResize(){
-    clearTimeout(resizeTimer);
-    // setVh() пишет CSS-переменную --vh, от которой зависит высота #hero-scroll
-    // (calc(var(--vh)...)) — если сразу после читать offsetTop/offsetHeight в
-    // measure(), браузер вынужден пересчитать layout синхронно (forced reflow).
-    // requestAnimationFrame даёт браузеру пересчитать это естественным образом
-    // перед следующим кадром — тот же результат, без принудительного пересчёта.
-    resizeTimer = setTimeout(function(){ setVh(); requestAnimationFrame(measure); }, 150);
+  // Только при самом первом измерении (загрузка страницы) выставляем
+  // smoothProgress = rawProgress сразу, без доводки — до этого момента
+  // trackHeight ещё 0 и readScroll() отдаёт заглушку 0. При последующих
+  // срабатываниях (resize/orientation) поведение как и раньше: просто
+  // обновляем trackTop/trackHeight, а сама анимация доедет до новых значений
+  // на ближайшем тике скролла — доводку резким прыжком не заменяем.
+  var heroInitialized = false;
+  function handleHeroGeometryChange(){
+    recomputeHeroTrack();
+    if(!heroInitialized){
+      heroInitialized = true;
+      readScroll(window.scrollY || window.pageYOffset);
+      smoothProgress = rawProgress;
+    }
   }
-  window.addEventListener('resize', handleResize);
-  if(window.visualViewport){
-    window.visualViewport.addEventListener('resize', handleResize);
+
+  if(window.ResizeObserver){
+    new ResizeObserver(handleHeroGeometryChange).observe(heroScroll);
+  } else {
+    // Фолбэк для браузеров без ResizeObserver (IE11 и подобные): переносим
+    // и первое, и все последующие после resize чтения geometry в
+    // requestAnimationFrame — тот же приём, что описан выше в комментарии.
+    requestAnimationFrame(handleHeroGeometryChange);
+    var heroResizeTimer;
+    window.addEventListener('resize', function(){
+      clearTimeout(heroResizeTimer);
+      heroResizeTimer = setTimeout(function(){ requestAnimationFrame(recomputeHeroTrack); }, 150);
+    });
   }
 })();
 </script>
@@ -716,17 +736,17 @@ document.addEventListener('DOMContentLoaded', function(){
   var vh = 0, trackTop = 0, holdDist = 0, slideDist = 0, releaseDist = 0, totalTrack = 0;
   var lastY = null;
 
-  function measure(){
+  // naturalH передаётся снаружи (см. ниже) — он приходит либо из
+  // ResizeObserver-колбэка на nextEl (безопасный момент чтения, браузер сам
+  // вызывает его уже после пересчёта layout), либо из rAF-фолбэка. Здесь
+  // остаётся только getBoundingClientRect() на pinEl — но вызывается эта
+  // функция ТОЛЬКО из тех же безопасных точек (ResizeObserver/rAF), никогда
+  // напрямую из середины произвольного кода сразу после записи стилей.
+  function recomputeCurtain(naturalH){
     vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
 
     var scrollYNow = window.scrollY || window.pageYOffset;
     trackTop = pinEl.getBoundingClientRect().top + scrollYNow;
-
-    // position:fixed теперь задаётся в CSS (html.js .curtain-next) с самого
-    // первого рендера — JS больше не переключает его на лету, поэтому можно
-    // просто прочитать offsetHeight напрямую, без сброса стилей (transform
-    // на layout-размер не влияет, а position уже не меняется по ходу).
-    var naturalH = nextEl.offsetHeight;
 
     slideDist   = vh * SLIDE_RATIO;
     holdDist    = vh * HOLD_RATIO;
@@ -781,15 +801,38 @@ document.addEventListener('DOMContentLoaded', function(){
   }
   window.__curtainTick = tick;
 
-  // Тот же приём, что и в hero-скрипте выше: первый measure() тоже уходит в
-  // requestAnimationFrame, чтобы чтение getBoundingClientRect()/offsetHeight
-  // не засчиталось как принудительная синхронная компоновка сразу при загрузке.
-  requestAnimationFrame(measure);
+  // naturalH (высота #curtainNext) отслеживаем через ResizeObserver вместо
+  // опроса offsetHeight — колбэк ResizeObserver браузер вызывает сам и
+  // гарантированно уже после пересчёта layout, поэтому чтение внутри него
+  // не может форсировать синхронную компоновку (в отличие от вызова
+  // offsetHeight сразу после записи стилей из нашего кода).
+  var lastNaturalH = 0;
+  if(window.ResizeObserver){
+    new ResizeObserver(function(){
+      lastNaturalH = nextEl.getBoundingClientRect().height;
+      recomputeCurtain(lastNaturalH);
+    }).observe(nextEl);
+  } else {
+    // Фолбэк для браузеров без ResizeObserver: как и раньше, но и первое, и
+    // все последующие чтения — только через requestAnimationFrame.
+    var curtainFallbackMeasure = function(){
+      lastNaturalH = nextEl.offsetHeight;
+      recomputeCurtain(lastNaturalH);
+    };
+    requestAnimationFrame(curtainFallbackMeasure);
+  }
 
+  // Ширина/высота вьюпорта (vh, trackTop) может смениться и без изменения
+  // собственной высоты #curtainNext (например, чисто горизонтальный resize
+  // или сдвиг блоков выше по странице) — на этот случай отдельно слушаем
+  // resize и пересчитываем той же функцией, тоже через rAF, с уже известным
+  // (закешированным) naturalH.
   var resizeTimer;
   function handleResize(){
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(function(){ requestAnimationFrame(measure); }, 150);
+    resizeTimer = setTimeout(function(){
+      requestAnimationFrame(function(){ recomputeCurtain(lastNaturalH); });
+    }, 150);
   }
   window.addEventListener('resize', handleResize);
   if(window.visualViewport){
