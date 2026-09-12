@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<!-- Дублируем кодировку через http-equiv на случай, если хостинг отдаёт
+     заголовок Content-Type без charset (тогда браузер полагается только на
+     meta-тег) — сам <meta charset> и так стоит первым тегом в <head>, в
+     пределах первых ~50 байт документа, это уже соответствует требованию
+     Lighthouse "в первых 1024 байтах". -->
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<!-- Ставим класс js максимально рано (до отрисовки body), чтобы ниже в CSS
+     панель #curtainNext сразу рендерилась в position:fixed без "прыжка" —
+     раньше это переключение делал JS уже после отрисовки в потоке, из-за
+     чего Lighthouse фиксировал заметный layout shift (CLS 0.16). Без JS
+     класс не добавится, и панель останется в обычном потоке (position:relative)
+     — доступной без скриптов. -->
+<script>document.documentElement.className += ' js';</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DentaLux — стоматология премиум-класса</title>
+<meta name="description" content="DentaLux — стоматология премиум-класса в Киеве. Импланты, терапия, ортодонтия и детская стоматология. Бесплатная консультация, честные цены.">
+
+<!-- ══════════════ OPEN GRAPH / PREVIEW В МЕССЕНДЖЕРАХ ══════════════
+     TODO: замените og:url на реальный домен сайта после деплоя. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="DentaLux">
+<meta property="og:title" content="DentaLux — стоматология премиум-класса">
+<meta property="og:description" content="DentaLux — стоматология премиум-класса в Киеве. Импланты, терапия, ортодонтия и детская стоматология. Бесплатная консультация, честные цены.">
+<!-- TODO: og:image — залейте картинку 1200×630px (jpg/png, <1MB) на хостинг и укажите её полный URL ниже. Без этого превью в Telegram/Instagram/Facebook будет без картинки. -->
+<meta property="og:image" content="https://dentalux.ua/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://dentalux.ua/">
+<meta property="og:locale" content="ru_RU">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="DentaLux — стоматология премиум-класса">
+<meta name="twitter:description" content="DentaLux — стоматология премиум-класса в Киеве. Импланты, терапия, ортодонтия и детская стоматология. Бесплатная консультация, честные цены.">
+<meta name="twitter:image" content="https://dentalux.ua/og-image.jpg">
+
+<!-- TODO: замените на реальный домен после деплоя -->
+<link rel="canonical" href="https://dentalux.ua/">
+
+<!-- Фавиконка сгенерирована из логотипа сайта (зуб на синем градиенте), встроена как base64 —
+     отдельно заливать файл на хостинг не нужно. При желании — замените на свой файл. -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Шрифты подключены асинхронно (preload + media=print → all), чтобы не
+     блокировать отрисовку страницы — экономит ~2с на LCP/FCP по данным
+     PageSpeed. Поведение и внешний вид шрифтов не меняются, только момент
+     их применения (font-display:swap уже был в исходном запросе). -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=optional">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=optional" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=optional" rel="stylesheet"></noscript>
+
+<!-- GA4: вставити тег тут -->
+<!-- Meta Pixel: вставити тут -->
+
+<style>:root{--bg-0:#05070C;--glass-fill:rgba(255,255,255,0.04);--glass-fill-strong:rgba(255,255,255,0.07);--glass-border:rgba(255,255,255,0.09);--glass-border-strong:rgba(255,255,255,0.18);--accent:#4EA8FF;--accent-2:#7FD4FF;--accent-deep:#1F6FD6;--text-0:#EDF1F8;--text-1:#AEB8CC;--text-2:#727C93;--r-xl:28px;--r-lg:20px;--r-md:14px;--max:1240px}*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--bg-0);color:var(--text-0);font-family:'Inter',sans-serif;line-height:1.6;overflow-x:hidden}h1,h2,h3,h4{font-family:'Manrope',sans-serif;font-weight:700;letter-spacing:-0.02em;color:var(--text-0)}img{display:block;max-width:100%}body::before{content:'';position:fixed;top:-20%;left:50%;width:min(1400px,200vw);height:min(1400px,200vw);transform:translateX(-50%);background:radial-gradient(circle,rgba(78,168,255,0.13) 0%,rgba(78,168,255,0.03) 35%,transparent 65%);pointer-events:none;z-index:0}.wrap{max-width:var(--max);margin:0 auto;padding:0 clamp(16px,4vw,40px);position:relative;z-index:1}.glass{background:var(--glass-fill);border:1px solid var(--glass-border);border-radius:var(--r-lg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,0.07),0 8px 32px rgba(0,0,0,0.3)}.glass::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.32),transparent);border-radius:var(--r-lg) var(--r-lg) 0 0;pointer-events:none}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 28px;border-radius:100px;font-family:'Inter',sans-serif;font-weight:600;font-size:15px;text-decoration:none;cursor:pointer;border:none;transition:transform .2s,box-shadow .2s,background .2s;white-space:nowrap}.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent-deep));color:#03101E;box-shadow:0 8px 24px rgba(78,168,255,0.35)}.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(78,168,255,0.45)}.btn-ghost{background:rgba(78,168,255,0.08);border:1px solid rgba(78,168,255,0.55);color:var(--accent-2);backdrop-filter:blur(12px);box-shadow:0 0 18px rgba(78,168,255,0.25),inset 0 0 12px rgba(78,168,255,0.06);text-shadow:0 0 12px rgba(127,212,255,0.6)}.btn-ghost:hover{background:rgba(78,168,255,0.15);border-color:rgba(78,168,255,0.8);box-shadow:0 0 28px rgba(78,168,255,0.4),inset 0 0 16px rgba(78,168,255,0.1);transform:translateY(-2px)}header{position:sticky;top:0;z-index:100;padding:16px 0;transition:opacity .25s ease,visibility .25s ease}.nav-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;gap:16px}.logo{display:flex;align-items:center;gap:10px;font-family:'Manrope',sans-serif;font-weight:800;font-size:19px;color:var(--text-0);text-decoration:none;flex-shrink:0}.nav-links{display:flex;gap:28px;list-style:none}.nav-links a{color:var(--text-1);text-decoration:none;font-size:14px;font-weight:500;transition:color .2s}.nav-links a:hover{color:var(--text-0)}.nav-cta{display:flex;align-items:center;gap:14px;flex-shrink:0}.phone-link{color:var(--text-0);text-decoration:none;font-weight:600;font-size:14px}.burger{display:none;background:none;border:none;cursor:pointer;padding:6px;color:var(--text-0)}.mobile-menu{display:none;flex-direction:column;gap:0;padding:8px 0}.mobile-menu a{color:var(--text-1);text-decoration:none;font-size:15px;font-weight:500;padding:14px 24px;border-bottom:1px solid var(--glass-border);transition:color .2s}.mobile-menu a:hover{color:var(--text-0)}.mobile-menu .btn{margin:16px 24px;width:calc(100% - 48px)}.mobile-menu.open{display:flex}.hero{padding:clamp(40px,6vw,70px) 0 clamp(60px,8vw,110px)}.hero-grid{display:grid;grid-template-columns:1fr;gap:0;align-items:center;max-width:760px}.eyebrow-tag{display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border-radius:100px;font-size:13px;font-weight:500;color:var(--accent-2);margin-bottom:24px}.eyebrow-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--accent-2);box-shadow:0 0 8px var(--accent-2);flex-shrink:0}.hero h1{font-size:clamp(32px,4.5vw,58px);line-height:1.08;margin-bottom:20px}.hero h1 .hl{color:var(--accent-2)}.hero-desc{font-size:clamp(15px,1.5vw,17px);color:var(--text-1);max-width:460px;margin-bottom:32px}.hero-actions{display:flex;gap:12px;margin-bottom:48px;flex-wrap:wrap}.hero-stats{display:flex;gap:0;border-top:1px solid var(--glass-border);padding-top:24px;flex-wrap:nowrap}.stat{flex:1;padding-right:16px;min-width:0}.stat:not(:last-child){border-right:1px solid var(--glass-border);margin-right:16px}.stat-num{font-family:'Manrope',sans-serif;font-weight:800;font-size:clamp(18px,2vw,26px);color:var(--accent-2);display:block;white-space:nowrap;text-shadow:0 0 16px rgba(127,212,255,0.65),0 0 32px rgba(78,168,255,0.35);letter-spacing:-0.01em}.stat-label{font-size:11px;color:var(--text-1);margin-top:3px;line-height:1.3;white-space:nowrap;font-weight:500}.hero-visual{position:relative;display:flex;align-items:center;justify-content:center;height:clamp(420px,55vw,620px)}.hero-glow{position:absolute;width:min(420px,80%);height:min(280px,55%);bottom:30px;background:radial-gradient(ellipse,rgba(78,168,255,0.2) 0%,rgba(78,168,255,0.05) 55%,transparent 75%);filter:blur(28px);z-index:0}.hero-visual svg.tooth-svg{position:relative;z-index:1;width:min(88%,380px);height:auto;filter:drop-shadow(0 50px 80px rgba(0,0,0,0.65)) drop-shadow(0 15px 30px rgba(0,0,0,0.4))}.section{padding:clamp(60px,8vw,110px) 0}.section-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:clamp(36px,5vw,56px);gap:32px}.section-head h2{font-size:clamp(26px,3.5vw,40px);line-height:1.2;max-width:560px}.section-head p{color:var(--text-1);max-width:340px;font-size:15px;padding-bottom:4px;flex-shrink:0}.journey{margin-top:clamp(48px,7vw,88px)}.journey-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;position:relative}.journey-row::before{content:'';position:absolute;top:24px;left:12.5%;right:12.5%;height:1px;background:var(--glass-border-strong);z-index:0}.journey-step{position:relative;z-index:1}.journey-num{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-deep));color:#03101E;box-shadow:0 8px 22px rgba(78,168,255,0.35);display:flex;align-items:center;justify-content:center;font-family:'Manrope',sans-serif;font-weight:800;font-size:15px;margin-bottom:22px}.journey-step h3{font-size:17px;margin-bottom:8px;max-width:220px}.journey-step p{font-size:13.5px;color:var(--text-1);max-width:240px}.services-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:16px}.svc-card{padding:30px;display:flex;flex-direction:column;justify-content:flex-end;min-height:210px;position:relative;overflow:hidden;text-decoration:none;transition:transform .3s,border-color .3s,box-shadow .3s;border-color:rgba(78,168,255,0.35);box-shadow:0 20px 54px rgba(31,111,214,0.25),inset 0 1px 0 rgba(255,255,255,0.08)}.svc-card:hover{transform:translateY(-4px);border-color:rgba(78,168,255,0.6);box-shadow:0 26px 68px rgba(31,111,214,0.4),inset 0 1px 0 rgba(255,255,255,0.12)}.svc-card.big{grid-row:span 2;min-height:440px}.svc-photo{position:absolute;inset:0;z-index:0}.svc-photo img{width:100%;height:100%;object-fit:cover;opacity:0.4;filter:brightness(1.12) saturate(1.06)}.svc-photo::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(9,28,64,0.08) 0%,rgba(5,16,38,0.8) 100%)}.svc-content{position:relative;z-index:1}.svc-num{position:absolute;top:24px;right:28px;font-family:'Manrope',sans-serif;font-size:12px;color:var(--text-2);font-weight:600;z-index:1}.svc-card h3{font-size:19px;margin-bottom:7px}.svc-card.big h3{font-size:24px}.svc-card p{font-size:13.5px;color:var(--text-1);max-width:270px}.svc-arrow{margin-top:16px;width:34px;height:34px;border-radius:50%;background:rgba(78,168,255,0.12);border:1px solid rgba(78,168,255,0.25);display:flex;align-items:center;justify-content:center;transition:background .2s}.svc-card:hover .svc-arrow{background:rgba(78,168,255,0.26)}.ba-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}@media(max-width:900px){.ba-grid{grid-template-columns:repeat(2,1fr)}}.ba-card{overflow:hidden}.ba-imgs{display:flex;gap:8px;margin-bottom:14px}.ba-img{flex:1;height:clamp(140px,18vw,200px);border-radius:11px;overflow:hidden;position:relative}.ba-img img{width:100%;height:100%;object-fit:cover}.ba-label{position:absolute;bottom:8px;left:8px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:100px;background:rgba(5,7,12,0.72);backdrop-filter:blur(6px);color:var(--text-0)}.ba-meta h4{font-size:14px;margin-bottom:3px}.ba-meta p{font-size:12.5px;color:var(--text-2)}.ba-meta .ba-tag{display:inline-block;margin-top:8px;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:600;background:rgba(78,168,255,0.12);color:var(--accent-2);border:1px solid rgba(78,168,255,0.2)}.doctors-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.doc-card{overflow:hidden;transition:transform .3s,border-color .3s,box-shadow .3s;border-color:rgba(78,168,255,0.35);box-shadow:0 20px 54px rgba(31,111,214,0.25),inset 0 1px 0 rgba(255,255,255,0.08)}.doc-card:hover{transform:translateY(-4px);border-color:rgba(78,168,255,0.6);box-shadow:0 26px 68px rgba(31,111,214,0.4),inset 0 1px 0 rgba(255,255,255,0.12)}.doc-photo{width:100%;height:clamp(180px,22vw,240px);border-radius:13px;overflow:hidden;margin-bottom:16px;position:relative}.doc-photo::after{content:'';position:absolute;inset:0;border-radius:13px;box-shadow:inset 0 0 0 1px rgba(78,168,255,0.25);pointer-events:none}.doc-photo img{width:100%;height:100%;object-fit:cover;filter:saturate(0.88)}.doc-card h3{font-size:16px;margin-bottom:4px}.doc-role{color:var(--accent-2);font-size:12.5px;font-weight:500;margin-bottom:8px}.doc-meta{font-size:12px;color:var(--text-2)}.pricing-wrap{display:grid;grid-template-columns:0.75fr 1.25fr;gap:20px}.pricing-intro{padding:36px 30px;display:flex;flex-direction:column;justify-content:space-between;transition:border-color .3s,box-shadow .3s;border-color:rgba(78,168,255,0.35);box-shadow:0 20px 54px rgba(31,111,214,0.25),inset 0 1px 0 rgba(255,255,255,0.08)}.pricing-intro:hover{border-color:rgba(78,168,255,0.6);box-shadow:0 26px 68px rgba(31,111,214,0.4),inset 0 1px 0 rgba(255,255,255,0.12)}.pricing-intro h3{font-size:22px;margin-bottom:12px}.pricing-intro p{color:var(--text-1);font-size:14px;margin-bottom:24px}.pricing-intro .logo{margin-bottom:18px;font-size:15px;pointer-events:none}.price-list{padding:8px 0;transition:border-color .3s,box-shadow .3s;border-color:rgba(78,168,255,0.35);box-shadow:0 20px 54px rgba(31,111,214,0.25),inset 0 1px 0 rgba(255,255,255,0.08)}.price-list:hover{border-color:rgba(78,168,255,0.6);box-shadow:0 26px 68px rgba(31,111,214,0.4),inset 0 1px 0 rgba(255,255,255,0.12)}.price-row{display:flex;justify-content:space-between;align-items:center;padding:18px 28px;border-bottom:1px solid var(--glass-border);gap:12px}.price-row:last-child{border-bottom:none}.price-name{font-weight:600;font-size:14.5px}.price-desc{font-size:12.5px;color:var(--text-2);margin-top:2px}.price-val{font-family:'Manrope',sans-serif;font-weight:700;font-size:16px;color:var(--accent-2);white-space:nowrap;flex-shrink:0}.test-masonry{column-count:3;column-gap:16px}.stars{display:flex;gap:4px;margin-bottom:14px}.test-card{break-inside:avoid;margin-bottom:16px;padding:26px;transition:transform .3s,border-color .3s,box-shadow .3s;border-color:rgba(78,168,255,0.35);box-shadow:0 20px 54px rgba(31,111,214,0.25),inset 0 1px 0 rgba(255,255,255,0.08)}.test-card:hover{transform:translateY(-4px);border-color:rgba(78,168,255,0.6);box-shadow:0 26px 68px rgba(31,111,214,0.4),inset 0 1px 0 rgba(255,255,255,0.12)}.test-card p{font-size:14px;color:var(--text-1);line-height:1.55;margin-bottom:20px}.test-author{display:flex;align-items:center;gap:12px}.avatar{width:40px;height:40px;border-radius:50%;overflow:hidden;flex-shrink:0}.avatar img{width:100%;height:100%;object-fit:cover}.test-card.lg{padding:36px}.test-card.lg .avatar{width:48px;height:48px}.test-card.sm{padding:20px}.test-card.sm .stars{margin-bottom:10px}.test-card.sm p{margin-bottom:16px}.test-card.sm .avatar{width:34px;height:34px}.author-name{font-weight:600;font-size:13.5px}.author-meta{font-size:12px;color:var(--text-2)}.faq-wrap{max-width:760px;margin:0 auto}.faq-item{margin-bottom:12px;overflow:hidden;transition:border-color .3s,box-shadow .3s;border-color:rgba(78,168,255,0.35);box-shadow:0 20px 54px rgba(31,111,214,0.25),inset 0 1px 0 rgba(255,255,255,0.08)}.faq-item:hover,.faq-item.open{border-color:rgba(78,168,255,0.6);box-shadow:0 26px 68px rgba(31,111,214,0.4),inset 0 1px 0 rgba(255,255,255,0.12)}.faq-q{display:flex;justify-content:space-between;align-items:center;padding:22px 28px;cursor:pointer;font-weight:600;font-size:15.5px;gap:16px}.faq-ico{width:26px;height:26px;border-radius:50%;background:rgba(78,168,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .3s}.faq-item.open .faq-ico{transform:rotate(45deg)}.faq-ans{max-height:0;overflow:hidden;transition:max-height .35s ease}.faq-ans-inner{padding:0 28px 24px;color:var(--text-1);font-size:14px;max-width:600px}.faq-item.open .faq-ans{max-height:200px}.cta-footer-wrap{position:relative;overflow:hidden;width:100%;border-radius:0;border-left:none;border-right:none;padding:clamp(36px,5vw,70px) 0 0;transition:border-color .3s,box-shadow .3s;border-color:rgba(78,168,255,0.35);box-shadow:0 20px 54px rgba(31,111,214,0.25),inset 0 1px 0 rgba(255,255,255,0.08)}.cta-footer-wrap::before{border-radius:0}.cta-footer-wrap:hover{border-color:rgba(78,168,255,0.6);box-shadow:0 26px 68px rgba(31,111,214,0.4),inset 0 1px 0 rgba(255,255,255,0.12)}.cta-footer-bg{position:absolute;inset:0;z-index:0}.cta-footer-bg img{width:100%;height:100%;object-fit:cover;opacity:0.75;filter:brightness(1.15) saturate(1.05)}.cta-footer-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,7,12,0.25) 0%,rgba(5,7,12,0.55) 45%,rgba(5,7,12,0.85) 100%)}.cta-glow{position:absolute;top:-40%;right:-8%;width:440px;height:440px;background:radial-gradient(circle,rgba(78,168,255,0.16),transparent 70%);pointer-events:none;z-index:0}.cta-top{position:relative;z-index:1;display:grid;grid-template-columns:1.1fr 0.9fr;gap:clamp(24px,4vw,52px);align-items:center;padding-bottom:clamp(36px,5vw,70px)}.cta-text h2{font-size:clamp(24px,3vw,36px);margin-bottom:14px;max-width:420px}.cta-text p{color:var(--text-1);font-size:15px;max-width:400px;margin-bottom:24px}.cta-mini-stats{display:flex;gap:0;border-top:1px solid var(--glass-border);padding-top:22px}.cta-form{display:flex;flex-direction:column;gap:12px}.cta-form input{padding:15px 18px;border-radius:13px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.04);color:var(--text-0);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s;width:100%}.cta-form input::placeholder{color:var(--text-2)}.cta-form input:focus{border-color:var(--accent)}.cta-form .btn{margin-top:4px;width:100%;padding:15px;font-size:15px}.cta-note{font-size:11.5px;color:var(--text-2);text-align:center}.footer-inner{position:relative;z-index:1;padding:clamp(32px,5vw,52px) 0 28px;border-top:1px solid var(--glass-border)}.footer-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:36px;margin-bottom:36px}.footer-brand p{color:var(--text-2);font-size:13.5px;margin-top:14px;max-width:240px;line-height:1.6}.footer-col h3{font-size:13.5px;margin-bottom:16px;color:var(--text-0)}.footer-col ul{list-style:none;display:flex;flex-direction:column;gap:10px}.footer-col ul li{color:var(--text-1);font-size:13.5px}.footer-col a{color:var(--text-1);text-decoration:none;font-size:13.5px;transition:color .2s}.footer-col a:hover{color:var(--accent-2)}.footer-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:22px;border-top:1px solid var(--glass-border);color:var(--text-2);font-size:12.5px;gap:16px;flex-wrap:wrap;padding-bottom:4px}.socials{display:flex;gap:10px}.soc-btn{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-1);text-decoration:none;border:1px solid var(--glass-border);transition:color .2s,border-color .2s}.soc-btn:hover{color:var(--accent-2);border-color:var(--glass-border-strong)}.curtain-scroll{position:relative}.curtain-pin{position:sticky;top:0;height:var(--vh,100vh);display:flex;align-items:center;justify-content:center;overflow:hidden;padding-top:0;padding-bottom:0;z-index:1}.curtain-pin .wrap{width:100%}.curtain-spacer{height:0}.curtain-next{position:relative;z-index:5;border-radius:48px 48px 0 0;will-change:transform}html.js .curtain-next{position:fixed;top:0;left:0;right:0;margin:0;transform:translateY(100vh)}.curtain-next::before{border-radius:48px 48px 0 0}.curtain-next .cta-footer-bg::after{border-radius:48px 48px 0 0}@media(max-width:1080px){.nav-links,.phone-link,.nav-cta .btn{display:none}.burger{display:flex}.hero-grid{grid-template-columns:1fr;gap:32px}.hero-visual{height:clamp(300px,60vw,460px);order:-1}.chip-1{top:4%;left:0}.chip-2{bottom:4%;right:0}.hero h1{font-size:clamp(30px,6vw,46px)}.journey-row{grid-template-columns:repeat(2,1fr);row-gap:36px}.journey-row::before{display:none}.services-grid{grid-template-columns:1fr 1fr}.svc-card.big{grid-row:span 1;min-height:210px}.ba-grid{grid-template-columns:repeat(2,1fr)}.doctors-grid{grid-template-columns:repeat(2,1fr)}.pricing-wrap{grid-template-columns:1fr}.test-masonry{column-count:2}.cta-top{grid-template-columns:1fr}.footer-grid{grid-template-columns:1fr 1fr}.section-head{flex-direction:column;align-items:flex-start;gap:12px}.section-head p{max-width:100%}}@media(max-width:640px){.journey-row{grid-template-columns:repeat(2,1fr);row-gap:32px;column-gap:16px}.services-grid{grid-template-columns:1fr}.svc-card{min-height:170px}.ba-grid{grid-template-columns:1fr}.doctors-grid{grid-template-columns:1fr 1fr}.footer-grid{grid-template-columns:1fr}.hero-stats{flex-wrap:nowrap;gap:0}.stat{min-width:0;padding-right:8px;border-right:none !important}.stat:not(:last-child){border-right:1px solid var(--glass-border) !important;margin-right:8px}.stat-num{font-size:15px;white-space:nowrap}.stat-label{font-size:9px;white-space:nowrap}.stat-num{white-space:normal}.stat-label{white-space:normal}.hero-actions{flex-direction:column}.hero-actions .btn{width:100%;text-align:center}.cta-footer-wrap{padding:28px 0 0}.test-masonry{column-count:1}.test-card{padding:22px}.faq-q{padding:18px 20px;font-size:14px}.faq-ans-inner{padding:0 20px 20px}.footer-grid{gap:24px}.cta-mini-stats{flex-direction:column;gap:12px}.cta-mini-stats .stat{border-right:none;padding-right:0}.doc-photo{height:170px}.ba-img{height:130px}}@media(max-width:400px){.doctors-grid{grid-template-columns:1fr}.hero-visual{height:260px}}50%{transform:translateY(-14px) rotate(1deg)}}.hero{position:relative;overflow:hidden}.hero-video-bg{position:absolute;inset:0;z-index:0;overflow:hidden}.hero-video-bg video{width:100%;height:100%;object-fit:cover;object-position:center}.hero-video-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,7,12,0.88) 0%,rgba(5,7,12,0.72) 50%,rgba(5,7,12,0.40) 100%),linear-gradient(180deg,rgba(5,7,12,0.3) 0%,rgba(5,7,12,0.0) 40%,rgba(5,7,12,0.6) 100%)}.hero .wrap{position:relative;z-index:1}#hero-scroll{position:relative;height:calc(var(--vh,100vh) * 2.5)}.hero{position:sticky;top:0;height:var(--vh,100vh);padding-top:0;padding-bottom:0}.hero .wrap{height:100%}.hero .hero-grid{height:100%}.hero-content{will-change:transform,opacity}.hero-overlay{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;text-align:center;pointer-events:none;opacity:0;will-change:opacity,transform}.hero-overlay-word{font-family:'Manrope',sans-serif;font-weight:800;font-size:clamp(48px,9vw,140px);letter-spacing:-0.02em;color:var(--text-0)}.hero-overlay-accent{color:var(--accent-2);text-shadow:0 0 24px rgba(127,212,255,0.65),0 0 60px rgba(78,168,255,0.35)}#advantages{position:relative;z-index:3;background:var(--bg-0);border-radius:40px 40px 0 0;box-shadow:0 -50px 110px rgba(0,0,0,0.5)}#customCursor{display:none}@media (hover:hover) and (pointer:fine){*{cursor:none !important}#customCursor{display:block;position:fixed;top:0;left:0;width:30px;height:auto;pointer-events:none;z-index:99999;transform:translate(-100px,-100px);opacity:0;transition:opacity .2s ease,width .18s ease;will-change:transform}#customCursor.is-visible{opacity:1}#customCursor.is-hover{width:40px}}.modal-overlay{position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(5,8,14,0.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;visibility:hidden;transition:opacity .25s ease,visibility .25s ease}.modal-overlay.open{opacity:1;visibility:visible}.modal-box{position:relative;width:100%;max-width:420px;padding:40px 34px 34px;text-align:center;border-color:rgba(78,168,255,0.4);box-shadow:0 30px 80px rgba(31,111,214,0.35),inset 0 1px 0 rgba(255,255,255,0.1);transform:translateY(18px) scale(0.97);opacity:0;transition:transform .3s ease,opacity .3s ease}.modal-overlay.open .modal-box{transform:translateY(0) scale(1);opacity:1}.modal-close{position:absolute;top:16px;right:16px;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);color:var(--text-1);cursor:pointer;transition:background .2s,color .2s,border-color .2s}.modal-close:hover{background:rgba(78,168,255,0.14);border-color:rgba(78,168,255,0.5);color:var(--text-0)}.modal-logo{position:relative;width:64px;height:64px;margin:0 auto 22px;display:flex;align-items:center;justify-content:center}.modal-logo svg{position:relative;z-index:1;filter:drop-shadow(0 4px 18px rgba(31,111,214,0.55))}.modal-logo-pulse{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(78,168,255,0.55),transparent 70%);animation:modalLogoPulse 2.2s ease-in-out infinite}.modal-logo-pulse::after{content:'';position:absolute;inset:0;border-radius:50%;border:1px solid rgba(126,196,255,0.5);animation:modalLogoRing 2.2s ease-out infinite}@keyframes modalLogoPulse{0%,100%{transform:scale(0.85);opacity:0.55}50%{transform:scale(1.15);opacity:0.9}}@keyframes modalLogoRing{0%{transform:scale(0.9);opacity:0.7}100%{transform:scale(1.9);opacity:0}}.modal-box h3{font-size:21px;margin-bottom:10px}.modal-box>p{color:var(--text-1);font-size:14px;margin-bottom:26px}.modal-form{text-align:left}</style>
+<!-- Фавиконы намеренно стоят ПОСЛЕ <style>. Раньше эти два тега с их
+     27 КБ base64 лежали в самом верху <head>, и браузер был обязан
+     прожевать их прежде, чем добраться до CSS, который блокирует
+     отрисовку, и до preconnect к шрифтам. Иконки вкладки на отрисовку
+     страницы не влияют вообще (apple-touch-icon нужен только при
+     добавлении сайта на домашний экран iOS), поэтому их место — в конце. -->
+<link rel="icon" type="image/png" href="images/favicon.png">
+<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+</head>
+<body>
+
+<!-- ══════════════ HEADER ══════════════ -->
+<header id="siteHeader">
+  <div class="wrap">
+    <nav class="nav-bar glass">
+      <a href="#" class="logo">
+        <svg width="32" height="32" viewBox="0 0 34 34" fill="none">
+          <circle cx="17" cy="17" r="17" fill="url(#lg1)"/>
+          <path d="M17 9c-2.2 0-3.6 1-5 1-1.6 0-2.5 1.3-2.5 3.2 0 2.6 1.3 6.5 2.3 8.7.7 1.6 1.3 2.6 2.3 2.6.9 0 1.1-.8 1.4-2.3.3-1.5.5-2.6 1.5-2.6s1.2 1.1 1.5 2.6c.3 1.5.5 2.3 1.4 2.3 1 0 1.6-1 2.3-2.6 1-2.2 2.3-6.1 2.3-8.7 0-1.9-.9-3.2-2.5-3.2-1.4 0-2.8-1-5-1z" fill="#fff" opacity="0.93"/>
+          <defs><linearGradient id="lg1" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse"><stop stop-color="#4EA8FF"/><stop offset="1" stop-color="#1F6FD6"/></linearGradient></defs>
+        </svg>
+        DentaLux
+      </a>
+      <ul class="nav-links">
+        <li><a href="#advantages">О клинике</a></li>
+        <li><a href="#services">Услуги</a></li>
+        <li><a href="#doctors">Врачи</a></li>
+        <li><a href="#prices">Цены</a></li>
+        <li><a href="#reviews">Отзывы</a></li>
+        <li><a href="#contacts">Контакты</a></li>
+      </ul>
+      <div class="nav-cta">
+        <a href="tel:+380441234567" class="phone-link">+380 44 123 45 67</a>
+        <a href="#contacts" class="btn btn-primary">Записаться</a>
+      </div>
+      <button class="burger" onclick="toggleMenu()" aria-label="Меню">
+        <svg id="burgerIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </nav>
+    <div class="mobile-menu glass" id="mobileMenu">
+      <a href="#advantages" onclick="closeMenu()">О клинике</a>
+      <a href="#services" onclick="closeMenu()">Услуги</a>
+      <a href="#doctors" onclick="closeMenu()">Врачи</a>
+      <a href="#prices" onclick="closeMenu()">Цены</a>
+      <a href="#reviews" onclick="closeMenu()">Отзывы</a>
+      <a href="#contacts" onclick="closeMenu()">Контакты</a>
+      <a href="tel:+380441234567" onclick="closeMenu()" style="color:var(--accent-2)">+380 44 123 45 67</a>
+      <a href="#contacts" class="btn btn-primary" onclick="closeMenu()">Записаться на приём</a>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════ HERO ══════════════ -->
+<!-- #hero-scroll задаёт "дорожку" прокрутки, внутри которой hero
+     остаётся зафиксированным (sticky), пока видео докручивается
+     до конца — как в шаблоне со scroll-driven hero. -->
+<div class="hero-scroll" id="hero-scroll">
+<section class="hero" id="hero">
+  <div class="hero-video-bg">
+    <video id="bg-video" muted playsinline preload="none">
+      <source src="video/hero-background.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <!-- ✏️ короткая надпись, что появляется и затухает посередине скролла hero -->
+  <div class="hero-overlay" id="hero-overlay">
+    <span class="hero-overlay-word">Denta<span class="hero-overlay-accent">Lux</span></span>
+  </div>
+
+  <div class="wrap">
+    <div class="hero-grid">
+      <div class="hero-content" id="hero-content">
+        <span class="eyebrow-tag glass"><span class="dot"></span>14 лет создаём здоровые улыбки</span>
+        <h1>Стоматология,<br>которой <span class="hl">доверяют</span></h1>
+        <p class="hero-desc">Современное оборудование, врачи с международными сертификатами и честные цены. Первая консультация — бесплатно.</p>
+        <div class="hero-actions">
+          <a href="#services" class="btn btn-ghost">Смотреть услуги</a>
+          <a href="#contacts" class="btn btn-ghost">Записаться</a>
+        </div>
+        <div class="hero-stats">
+          <div class="stat"><span class="stat-num">14 лет</span><span class="stat-label">на рынке</span></div>
+          <div class="stat"><span class="stat-num">12</span><span class="stat-label">врачей в штате</span></div>
+          <div class="stat"><span class="stat-num">15 000+</span><span class="stat-label">пациентов</span></div>
+          <div class="stat"><span class="stat-num">3 года</span><span class="stat-label">гарантии</span></div>
+        </div>
+      </div>
+
+
+    </div>
+  </div>
+</section>
+</div>
+<!-- /#hero-scroll -->
+
+
+
+<!-- ══════════════ ADVANTAGES ══════════════ -->
+<section class="section" id="advantages">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>От консультации до лечения — простой путь к здоровой улыбке</h2>
+      <p>От первого визита до финального результата — мы делаем каждый шаг простым, комфортным и ориентированным на вас.</p>
+    </div>
+    <div class="journey">
+      <div class="journey-row">
+        <div class="journey-step">
+          <div class="journey-num">01</div>
+          <h3>Запишитесь на приём</h3>
+          <p>Быстрая онлайн-запись или звонок — подберём удобное для вас время.</p>
+        </div>
+        <div class="journey-step">
+          <div class="journey-num">02</div>
+          <h3>Комплексная консультация</h3>
+          <p>Наши врачи оценят ваши потребности и составят индивидуальный план лечения.</p>
+        </div>
+        <div class="journey-step">
+          <div class="journey-num">03</div>
+          <h3>Персональное лечение</h3>
+          <p>Бережная профессиональная помощь с использованием современного оборудования.</p>
+        </div>
+        <div class="journey-step">
+          <div class="journey-num">04</div>
+          <h3>Дальнейший уход</h3>
+          <p>Следим за здоровьем вашей улыбки — регулярные осмотры и поддержка.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ SERVICES ══════════════ -->
+<section class="section" id="services">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Полный цикл стоматологической помощи под одной крышей</h2>
+      <p>От профилактики до сложной имплантации — с собственной лабораторией.</p>
+    </div>
+    <div class="services-grid">
+      <a href="#" class="svc-card big glass" onclick="openServiceModal(event,'Имплантация','Установка имплантов премиум-класса с точным цифровым планированием.')">
+        <div class="svc-photo"><img decoding="async" width="600" height="900" loading="lazy" src="images/implantaciya.webp" alt="Имплантация"><div></div></div>
+        <span class="svc-num">01</span>
+        <div class="svc-content">
+          <h3>Имплантация</h3>
+          <p>Установка имплантов премиум-класса с точным цифровым планированием.</p>
+          <span class="svc-arrow"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7FD4FF" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </div>
+      </a>
+      <a href="#" class="svc-card glass" onclick="openServiceModal(event,'Терапия','Лечение кариеса и пульпита без боли.')">
+        <div class="svc-photo"><img decoding="async" width="500" height="400" loading="lazy" src="images/terapiya.webp" alt="Терапия"><div></div></div>
+        <span class="svc-num">02</span>
+        <div class="svc-content">
+          <h3>Терапия</h3>
+          <p>Лечение кариеса и пульпита без боли.</p>
+          <span class="svc-arrow"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7FD4FF" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </div>
+      </a>
+      <a href="#" class="svc-card glass" onclick="openServiceModal(event,'Ортодонтия','Брекеты и элайнеры для ровной улыбки. Коронки, виниры и протезирование.')">
+        <div class="svc-photo"><img decoding="async" width="500" height="400" loading="lazy" src="images/ortodontiya.webp" alt="Ортодонтия"><div></div></div>
+        <span class="svc-num">03</span>
+        <div class="svc-content">
+          <h3>Ортодонтия</h3>
+          <p>Брекеты и элайнеры для ровной улыбки. Коронки, виниры и протезирование.</p>
+          <span class="svc-arrow"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7FD4FF" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </div>
+      </a>
+      <a href="#" class="svc-card glass" onclick="openServiceModal(event,'Детская стоматология','Бережный подход, первый визит — знакомство без лечения.')">
+        <div class="svc-photo"><img decoding="async" width="500" height="400" loading="lazy" src="images/detskaya-stomatologiya.webp" alt="Детская стоматология"><div></div></div>
+        <span class="svc-num">04</span>
+        <div class="svc-content">
+          <h3>Детская стоматология</h3>
+          <p>Бережный подход, первый визит — знакомство без лечения.</p>
+          <span class="svc-arrow"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7FD4FF" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- ══════════════ DOCTORS ══════════════ -->
+<section class="section" id="doctors">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Команда врачей с опытом от 8 до 22 лет</h2>
+      <p>Каждый — узкий специалист с регулярным повышением квалификации.</p>
+    </div>
+    <div class="doctors-grid">
+      <div class="doc-card glass" style="padding:18px">
+        <div class="doc-photo"><img decoding="async" width="480" height="600" loading="lazy" src="images/rafael-mundago.webp" alt="Рафаель Мундаго"></div>
+        <h3>Рафаель Мундаго</h3>
+        <div class="doc-role">Хирург-имплантолог</div>
+        <div class="doc-meta">Стаж 22 года · к.м.н.</div>
+      </div>
+      <div class="doc-card glass" style="padding:18px">
+        <div class="doc-photo"><img decoding="async" width="480" height="600" loading="lazy" src="images/marina-kovalchuk.webp" alt="Марина Ковальчук"></div>
+        <h3>Марина Ковальчук</h3>
+        <div class="doc-role">Ортодонт</div>
+        <div class="doc-meta">Стаж 14 лет</div>
+      </div>
+      <div class="doc-card glass" style="padding:18px">
+        <div class="doc-photo"><img decoding="async" width="480" height="600" loading="lazy" src="images/andrey-savchuk.webp" alt="Андрей Савчук"></div>
+        <h3>Андрей Савчук</h3>
+        <div class="doc-role">Терапевт-эндодонтист</div>
+        <div class="doc-meta">Стаж 11 лет</div>
+      </div>
+      <div class="doc-card glass" style="padding:18px">
+        <div class="doc-photo"><img decoding="async" width="480" height="600" loading="lazy" src="images/elena-trosinova.webp" alt="Елена Тросинова"></div>
+        <h3>Елена Тросинова</h3>
+        <div class="doc-role">Детский стоматолог</div>
+        <div class="doc-meta">Стаж 9 лет</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ PRICES ══════════════ -->
+<section class="section" id="prices">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Прозрачные цены без скрытых доплат</h2>
+      <p>Финальная стоимость фиксируется в договоре после диагностики.</p>
+    </div>
+    <div class="pricing-wrap">
+      <div class="pricing-intro glass">
+        <div>
+          <div class="logo">
+            <svg width="26" height="26" viewBox="0 0 34 34" fill="none">
+              <circle cx="17" cy="17" r="17" fill="url(#lgPrices)"/>
+              <path d="M17 9c-2.2 0-3.6 1-5 1-1.6 0-2.5 1.3-2.5 3.2 0 2.6 1.3 6.5 2.3 8.7.7 1.6 1.3 2.6 2.3 2.6.9 0 1.1-.8 1.4-2.3.3-1.5.5-2.6 1.5-2.6s1.2 1.1 1.5 2.6c.3 1.5.5 2.3 1.4 2.3 1 0 1.6-1 2.3-2.6 1-2.2 2.3-6.1 2.3-8.7 0-1.9-.9-3.2-2.5-3.2-1.4 0-2.8-1-5-1z" fill="#fff" opacity="0.93"/>
+              <defs><linearGradient id="lgPrices" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse"><stop stop-color="#4EA8FF"/><stop offset="1" stop-color="#1F6FD6"/></linearGradient></defs>
+            </svg>
+            DentaLux
+          </div>
+          <h3>Полный прайс на 120+ услуг</h3>
+          <p>Самые популярные позиции ниже. Остальные цены пришлём в мессенджер после консультации.</p>
+        </div>
+        <a href="#" class="btn btn-primary" onclick="openPriceModal(event)">Получить полный прайс</a>
+      </div>
+      <div class="price-list glass">
+        <div class="price-row">
+          <div><div class="price-name">Консультация + осмотр</div><div class="price-desc">Первичный приём с планом лечения</div></div>
+          <div class="price-val">Бесплатно</div>
+        </div>
+        <div class="price-row">
+          <div><div class="price-name">Лечение кариеса</div><div class="price-desc">Пломба светового отверждения</div></div>
+          <div class="price-val">от 1 200 ₴</div>
+        </div>
+        <div class="price-row">
+          <div><div class="price-name">Профессиональная гигиена</div><div class="price-desc">Чистка + Air Flow</div></div>
+          <div class="price-val">от 1 800 ₴</div>
+        </div>
+        <div class="price-row">
+          <div><div class="price-name">Имплантация под ключ</div><div class="price-desc">Имплант + коронка + установка</div></div>
+          <div class="price-val">от 22 000 ₴</div>
+        </div>
+        <div class="price-row">
+          <div><div class="price-name">Виниры E-max</div><div class="price-desc">За единицу, керамика премиум</div></div>
+          <div class="price-val">от 9 500 ₴</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ REVIEWS ══════════════ -->
+<section class="section" id="reviews">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Что говорят наши пациенты</h2>
+      <p>Средний рейтинг 4.9 из 5 на независимых площадках.</p>
+    </div>
+    <div class="test-masonry">
+      <div class="test-card glass lg">
+        <div class="stars"><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg></div>
+        <p>«Боялась стоматологов с детства. Здесь впервые прошла лечение без паники — врач объяснял каждый шаг, показывал снимки и рассказывал, что делает.»</p>
+        <div class="test-author">
+          <div class="avatar"><img decoding="async" width="100" height="100" loading="lazy" src="images/anna-kovalenko.webp" alt="Анна Коваленко"></div>
+          <div><div class="author-name">Анна Коваленко</div><div class="author-meta">Лечение под седацией, 2025</div></div>
+        </div>
+      </div>
+      <div class="test-card glass">
+        <div class="stars"><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg></div>
+        <p>«Ставил импланты. Весь процесс от диагностики до коронки занял 4 месяца — ровно как обещали.»</p>
+        <div class="test-author">
+          <div class="avatar"><img decoding="async" width="100" height="100" loading="lazy" src="images/dmitriy-voloshin.webp" alt="Дмитрий Волошин"></div>
+          <div><div class="author-name">Дмитрий Волошин</div><div class="author-meta">Имплантация</div></div>
+        </div>
+      </div>
+      <div class="test-card glass sm">
+        <div class="stars"><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg></div>
+        <p>«Ребёнку 6 лет, лечили молочные зубы — детский врач нашёл подход, сын теперь сам просится на осмотр.»</p>
+        <div class="test-author">
+          <div class="avatar"><img decoding="async" width="100" height="100" loading="lazy" src="images/olga-panchenko.webp" alt="Ольга Панченко"></div>
+          <div><div class="author-name">Ольга Панченко</div><div class="author-meta">Детская стоматология</div></div>
+        </div>
+      </div>
+      <div class="test-card glass">
+        <div class="stars"><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg></div>
+        <p>«Ходил к трём ортодонтам до этого. Здесь наконец нашли план лечения, который реально сработал — капы, как и обещали, за 10 месяцев.»</p>
+        <div class="test-author">
+          <div class="avatar"><img decoding="async" width="100" height="100" loading="lazy" src="images/sergey-litvinenko.webp" alt="Сергей Литвиненко"></div>
+          <div><div class="author-name">Сергей Литвиненко</div><div class="author-meta">Ортодонтия, капы</div></div>
+        </div>
+      </div>
+      <div class="test-card glass lg">
+        <div class="stars"><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg></div>
+        <p>«Хотела просто ровные зубы без брекетов. Врач предложил виниры — результат превзошёл ожидания, теперь это моя любимая часть лица.»</p>
+        <div class="test-author">
+          <div class="avatar"><img decoding="async" width="100" height="100" loading="lazy" src="images/yuliya-bondar.webp" alt="Юлия Бондар"></div>
+          <div><div class="author-name">Юлия Бондар</div><div class="author-meta">Эстетическая стоматология</div></div>
+        </div>
+      </div>
+      <div class="test-card glass sm">
+        <div class="stars"><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg></div>
+        <p>«Прихожу на чистку каждые полгода уже три года. Всегда аккуратно, без боли, врач сразу говорит, если что-то нужно подлечить.»</p>
+        <div class="test-author">
+          <div class="avatar"><img decoding="async" width="100" height="100" loading="lazy" src="images/igor-pavlenko.webp" alt="Игорь Павленко"></div>
+          <div><div class="author-name">Игорь Павленко</div><div class="author-meta">Профессиональная гигиена</div></div>
+        </div>
+      </div>
+      <div class="test-card glass">
+        <div class="stars"><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg></div>
+        <p>«Пришла с острой болью вечером — приняли в тот же день. Всё сделали быстро, аккуратно и без лишних нервов.»</p>
+        <div class="test-author">
+          <div class="avatar"><img decoding="async" width="100" height="100" loading="lazy" src="images/katerina-shevchenko.webp" alt="Катерина Шевченко"></div>
+          <div><div class="author-name">Катерина Шевченко</div><div class="author-meta">Лечение кариеса</div></div>
+        </div>
+      </div>
+      <div class="test-card glass lg">
+        <div class="stars"><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#7FD4FF"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg></div>
+        <p>«Восстанавливали зуб после травмы. Коронка выглядит и ощущается как родной зуб — уже забыл, каким он был раньше.»</p>
+        <div class="test-author">
+          <div class="avatar"><img decoding="async" width="100" height="100" loading="lazy" src="images/maksim-ivanenko.webp" alt="Максим Иваненко"></div>
+          <div><div class="author-name">Максим Иваненко</div><div class="author-meta">Протезирование</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ FAQ ══════════════ -->
+<div class="curtain-scroll" id="curtainScroll">
+<section class="section curtain-pin" id="faq">
+  <div class="wrap">
+    <div class="section-head" style="flex-direction:column;align-items:center;text-align:center;"><h2>Частые вопросы</h2></div>
+    <div class="faq-wrap">
+      <div class="faq-item glass open">
+        <div class="faq-q" onclick="toggleFaq(this)">Больно ли лечить зубы в DentaLux?<span class="faq-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7FD4FF" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span></div>
+        <div class="faq-ans"><div class="faq-ans-inner">Мы используем современную анестезию и, при необходимости, седацию — большинство пациентов не чувствуют дискомфорта даже при сложных процедурах.</div></div>
+      </div>
+      <div class="faq-item glass">
+        <div class="faq-q" onclick="toggleFaq(this)">Сколько стоит первичная консультация?<span class="faq-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7FD4FF" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span></div>
+        <div class="faq-ans"><div class="faq-ans-inner">Первичная консультация с осмотром и составлением плана лечения — бесплатно. Оплата начинается только с самого лечения.</div></div>
+      </div>
+      <div class="faq-item glass">
+        <div class="faq-q" onclick="toggleFaq(this)">Работаете ли вы в экстренных случаях?<span class="faq-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7FD4FF" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span></div>
+        <div class="faq-ans"><div class="faq-ans-inner">Да, экстренный приём работает 24/7 — при острой боли или травме можно обратиться в любое время суток.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="curtain-spacer" id="curtainSpacer"></div>
+
+<!-- ══════════════ CTA / CONTACTS ══════════════ -->
+<section class="section" id="contacts" style="padding:0;">
+  <footer class="cta-footer-wrap glass curtain-next" id="curtainNext">
+      <div class="cta-footer-bg"><img decoding="async" width="1024" height="572" loading="lazy" src="images/footer-bg.webp" alt=""></div>
+      <div class="cta-glow"></div>
+      <div class="wrap">
+      <div class="cta-top">
+        <div class="cta-text">
+          <h2>Запишитесь на бесплатную консультацию</h2>
+          <p>Администратор перезвонит в течение 15 минут и подберёт удобное время.</p>
+          <div class="cta-mini-stats">
+            <div class="stat"><span class="stat-num">24/7</span><span class="stat-label">экстренный приём</span></div>
+          </div>
+        </div>
+        <!-- TODO: форма не подключена к бэкенду — сейчас только показывает alert(). Нужно добавить action/обработчик отправки (email, Telegram-бот, CRM или сервис форм) перед деплоем -->
+        <form class="cta-form" onsubmit="event.preventDefault();alert('Заявка отправлена!');">
+          <input type="text" placeholder="Ваше имя" required>
+          <input type="tel" placeholder="+380 __ ___ __ __" required>
+          <input type="text" placeholder="Интересующая услуга (необязательно)">
+          <button type="submit" class="btn btn-primary">Записаться на приём</button>
+          <div class="cta-note">Нажимая кнопку, вы соглашаетесь с политикой обработки данных</div>
+        </form>
+      </div>
+      <div class="footer-inner">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <a href="#" class="logo">
+              <svg width="30" height="30" viewBox="0 0 34 34" fill="none">
+                <circle cx="17" cy="17" r="17" fill="url(#lg2)"/>
+                <path d="M17 9c-2.2 0-3.6 1-5 1-1.6 0-2.5 1.3-2.5 3.2 0 2.6 1.3 6.5 2.3 8.7.7 1.6 1.3 2.6 2.3 2.6.9 0 1.1-.8 1.4-2.3.3-1.5.5-2.6 1.5-2.6s1.2 1.1 1.5 2.6c.3 1.5.5 2.3 1.4 2.3 1 0 1.6-1 2.3-2.6 1-2.2 2.3-6.1 2.3-8.7 0-1.9-.9-3.2-2.5-3.2-1.4 0-2.8-1-5-1z" fill="#fff" opacity="0.93"/>
+                <defs><linearGradient id="lg2" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse"><stop stop-color="#4EA8FF"/><stop offset="1" stop-color="#1F6FD6"/></linearGradient></defs>
+              </svg>
+              DentaLux
+            </a>
+            <p>Стоматология премиум-класса без страха и очередей. На рынке с 2011 года.</p>
+          </div>
+          <div class="footer-col">
+            <h3>Услуги</h3>
+            <ul>
+              <li><a href="#services">Имплантация</a></li>
+              <li><a href="#services">Терапия</a></li>
+              <li><a href="#services">Ортодонтия</a></li>
+              <li><a href="#services">Детская стоматология</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h3>Клиника</h3>
+            <ul>
+              <li><a href="#advantages">О нас</a></li>
+              <li><a href="#doctors">Врачи</a></li>
+              <li><a href="#reviews">Отзывы</a></li>
+              <!-- TODO: страницы блога пока нет — замените href="#" на реальный адрес раздела блога, когда он появится -->
+              <li><a href="#">Блог</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h3>Контакты</h3>
+            <ul>
+              <li><a href="tel:+380441234567">+380 44 123 45 67</a></li>
+              <li><a href="mailto:info@dentalux.ua">info@dentalux.ua</a></li>
+              <!-- TODO: адрес демонстрационный — проверьте точку на карте и при необходимости замените query в ссылке на реальные координаты -->
+              <li><a href="https://www.google.com/maps/search/?api=1&query=%D0%BA%D0%B8%D0%B5%D0%B2%2C%20%D1%83%D0%BB.%20%D0%9A%D1%80%D0%B5%D1%89%D0%B0%D1%82%D0%B8%D0%BA%2C%2022" target="_blank" rel="noopener noreferrer">ул. Крещатик, 22</a></li>
+              <li>Пн–Вс: 8:00–21:00</li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <div>© 2026 DentaLux. Все права защищены.</div>
+          <div class="socials">
+            <!-- TODO: соцсети-заглушки — замените href="#" на реальные адреса профилей (target/rel уже проставлены) -->
+            <a href="#" class="soc-btn" aria-label="Facebook" target="_blank" rel="noopener noreferrer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></a>
+            <a href="#" class="soc-btn" aria-label="Instagram" target="_blank" rel="noopener noreferrer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg></a>
+            <a href="#" class="soc-btn" aria-label="TikTok" target="_blank" rel="noopener noreferrer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12a4 4 0 104 4V4a5 5 0 005 5"/></svg></a>
+          </div>
+        </div>
+      </div>
+      </div>
+    </footer>
+</section>
+</div>
+
+<script>
+function toggleFaq(el){
+  const item=el.parentElement;
+  const was=item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
+  if(!was)item.classList.add('open');
+}
+function toggleMenu(){
+  const m=document.getElementById('mobileMenu');
+  m.classList.toggle('open');
+}
+function closeMenu(){
+  document.getElementById('mobileMenu').classList.remove('open');
+}
+// Видео fallback: если не загрузилось — показываем картинку
+document.addEventListener('DOMContentLoaded', function(){
+  const video = document.querySelector('.hero-visual video');
+  const img   = document.querySelector('.hero-visual img');
+  if(!video || !img) return;
+  // Если через 2.5с видео ещё не играет — показываем картинку
+  const timer = setTimeout(function(){
+    if(video.readyState < 2){
+      video.style.display = 'none';
+      img.style.display   = 'block';
+    }
+  }, 2500);
+  video.addEventListener('playing', function(){ clearTimeout(timer); });
+  video.addEventListener('error',   function(){
+    clearTimeout(timer);
+    video.style.display = 'none';
+    img.style.display   = 'block';
+  });
+});
+</script>
+
+<!-- ══════════════ SCROLL-DRIVEN HERO АНИМАЦИЯ (added, усиленная версия) ═══
+     Hero фиксируется (sticky) на весь экран внутри #hero-scroll и держится
+     там, пока видео докручивается кадр-за-кадром до конца — тот же движок,
+     что в вашем шаблоне (--vh фикс, requestVideoFrameCallback seek-engine).
+     Эффект ограничен #hero-scroll: после него страница продолжает
+     скроллиться обычным образом, ничего в остальных секциях не меняется. -->
+<script>
+(function(){
+  var heroVideo   = document.getElementById('bg-video');
+  var heroContent = document.getElementById('hero-content');
+  var heroOverlay = document.getElementById('hero-overlay');
+  var heroScroll  = document.getElementById('hero-scroll');
+  if(!heroVideo || !heroContent || !heroScroll) return;
+
+  // -- vh фикс (учитывает адресную строку браузера на мобильных) --
+  function setVh(){
+    var h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    document.documentElement.style.setProperty('--vh', h + 'px');
+  }
+  setVh();
+  window.addEventListener('resize', setVh);
+  if(window.visualViewport){ window.visualViewport.addEventListener('resize', setVh); }
+
+  // -- Состояние видео --
+  var videoReady  = false;
+  var targetTime  = 0;
+  var currentTime = 0;
+  var seekLocked  = false;
+
+  heroVideo.addEventListener('loadedmetadata', function(){ videoReady = true; });
+  heroVideo.load();
+
+  function doSeek(){
+    if(!videoReady || !heroVideo.duration) return;
+    if(Math.abs(targetTime - currentTime) < 0.05){ seekLocked = false; return; }
+    seekLocked  = true;
+    currentTime = targetTime;
+    if('requestVideoFrameCallback' in heroVideo){
+      heroVideo.requestVideoFrameCallback(function(){ seekLocked = false; doSeek(); });
+    } else {
+      heroVideo.addEventListener('seeked', function onSeeked(){
+        heroVideo.removeEventListener('seeked', onSeeked);
+        seekLocked = false;
+        doSeek();
+      }, { once: true });
+    }
+    heroVideo.currentTime = currentTime;
+  }
+
+  function ease(t){
+    return t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2) / 2;
+  }
+
+  var trackTop = 0, trackHeight = 0, lastProgress = -1;
+  var rawProgress = 0, smoothProgress = 0;
+  // Коэффициент сглаживания: чем меньше — тем плавнее и "инертнее" догоняет
+  // отображаемый прогресс реальную прокрутку (лёгкая задержка/доводка).
+  var SMOOTH = 0.11;
+
+  // Раньше trackTop/trackHeight читались опросом offsetTop/offsetHeight из
+  // requestAnimationFrame, вручную вызываемого нами при загрузке и при
+  // resize. Даже через rAF это иногда засчитывалось Lighthouse как
+  // "Принудительная компоновка", потому что мы сами решаем МОМЕНТ чтения —
+  // а браузер тем временем мог ещё не пересчитать layout после наших же
+  // более ранних записей стилей (например setVh()). ResizeObserver устроен
+  // иначе: браузер вызывает колбэк САМ, и гарантированно уже ПОСЛЕ того,
+  // как пересчитал layout для этого элемента — то есть чтение геометрии
+  // внутри колбэка в принципе не может вызвать синхронную принудительную
+  // компоновку. #hero-scroll использует calc(var(--vh)*2.5) в CSS, поэтому
+  // и viewport-resize (меняет --vh), и любой другой реальный реflow этого
+  // блока сами приводят к вызову колбэка — вручную дёргать измерение больше
+  // не нужно ни при загрузке, ни при resize.
+  function recomputeHeroTrack(){
+    var scrollYNow = window.scrollY || window.pageYOffset;
+    var rect = heroScroll.getBoundingClientRect();
+    trackTop    = rect.top + scrollYNow;
+    // Дистанция прокрутки, за которую hero остаётся закреплённым:
+    // вся высота #hero-scroll минус один экран (тот, что виден, пока hero pinned).
+    trackHeight = rect.height - (window.visualViewport ? window.visualViewport.height : window.innerHeight);
+  }
+
+  function readScroll(scrollY){
+    if(trackHeight <= 0) { rawProgress = 0; return; }
+    rawProgress = Math.max(0, Math.min(1, (scrollY - trackTop) / trackHeight));
+  }
+
+  function update(){
+    var progress = smoothProgress;
+
+    if(Math.abs(progress - lastProgress) < 0.0005) return;
+    lastProgress = progress;
+
+    // Видео: докручивается кадр-за-кадром, финиширует к 95% дорожки
+    // (небольшой запас в конце — кадр держится, пока наплывает секция)
+    if(videoReady && heroVideo.duration){
+      targetTime = Math.min(1, progress / 0.95) * heroVideo.duration;
+      if(!seekLocked) doSeek();
+    }
+
+    // Текст: исчезает и уходит вверх в первые 30% дорожки
+    var textP = Math.min(1, progress / 0.30);
+    var te = ease(textP);
+    heroContent.style.transform = 'translateY(' + (te * -70) + 'px)';
+    heroContent.style.opacity   = (1 - te).toFixed(3);
+
+    // "DentaLux": плавно проявляется после текста и плавно затухает
+    // перед тем, как наплывает следующая секция — чистый fade, без резких скачков.
+    if(heroOverlay){
+      var ovIn  = Math.max(0, Math.min(1, (progress - 0.32) / 0.14));  // 32% → 46%
+      var ovOut = Math.max(0, Math.min(1, (progress - 0.62) / 0.16));  // 62% → 78%
+      var ovInE  = ease(ovIn);
+      var ovOutE = ease(ovOut);
+      var ovOpacity = ovInE * (1 - ovOutE);
+      var ovY = (1 - ovInE) * 24 + ovOutE * -24;
+      heroOverlay.style.opacity   = ovOpacity.toFixed(3);
+      heroOverlay.style.transform = 'translateY(' + ovY + 'px)';
+    }
+  }
+
+  // tick(scrollY) вызывается общим координатором (см. блок ниже, после
+  // curtain-скрипта) — единый requestAnimationFrame на всю страницу вместо
+  // отдельного цикла на каждый скролл-эффект. Это устраняет forced reflow:
+  // раньше несколько независимых rAF-циклов читали window.scrollY вперемешку
+  // с чужими записями стилей в одном и том же кадре, что вынуждало браузер
+  // пересчитывать layout синхронно (см. Lighthouse → "Принудительная компоновка").
+  // Теперь scrollY читается один раз за кадр, до всех записей стилей.
+  function tick(scrollY){
+    readScroll(scrollY);
+    // Плавно "доводим" отображаемый прогресс до реального — инерционный,
+    // более плавный отклик вместо мгновенной привязки к скроллу.
+    smoothProgress += (rawProgress - smoothProgress) * SMOOTH;
+    if(Math.abs(rawProgress - smoothProgress) < 0.0004) smoothProgress = rawProgress;
+    update();
+    // Возвращаем координатору признак "доводка ещё идёт" — пока true, кадры
+    // нужно продолжать; как только smoothProgress догнал rawProgress, цикл
+    // можно останавливать вместо того, чтобы крутить rAF вхолостую вечно.
+    return smoothProgress !== rawProgress;
+  }
+  window.__heroTick = tick;
+
+  // Только при самом первом измерении (загрузка страницы) выставляем
+  // smoothProgress = rawProgress сразу, без доводки — до этого момента
+  // trackHeight ещё 0 и readScroll() отдаёт заглушку 0. При последующих
+  // срабатываниях (resize/orientation) поведение как и раньше: просто
+  // обновляем trackTop/trackHeight, а сама анимация доедет до новых значений
+  // на ближайшем тике скролла — доводку резким прыжком не заменяем.
+  var heroInitialized = false;
+  function handleHeroGeometryChange(){
+    recomputeHeroTrack();
+    if(!heroInitialized){
+      heroInitialized = true;
+      readScroll(window.scrollY || window.pageYOffset);
+      smoothProgress = rawProgress;
+    }
+  }
+
+  if(window.ResizeObserver){
+    new ResizeObserver(handleHeroGeometryChange).observe(heroScroll);
+  } else {
+    // Фолбэк для браузеров без ResizeObserver (IE11 и подобные): переносим
+    // и первое, и все последующие после resize чтения geometry в
+    // requestAnimationFrame — тот же приём, что описан выше в комментарии.
+    requestAnimationFrame(handleHeroGeometryChange);
+    var heroResizeTimer;
+    window.addEventListener('resize', function(){
+      clearTimeout(heroResizeTimer);
+      heroResizeTimer = setTimeout(function(){ requestAnimationFrame(recomputeHeroTrack); }, 150);
+    });
+  }
+})();
+</script>
+
+<!-- ══════════════ CURTAIN НАЕЗД: FAQ → CONTACTS ══════════════
+     #faq зафиксирован (position:sticky top:0, чисто в CSS, без
+     transform — это безопасно) на весь экран, пока идёт прокрутка
+     #curtainScroll. Панель #curtainNext держится через
+     position:fixed (JS) и наезжает на FAQ снизу вверх в последней
+     трети хода, а затем (если сам футер выше экрана) продолжает
+     "довскролливаться" уже внутри себя за счёт transform — вплоть
+     до самого конца страницы. Так как это ПОСЛЕДНЯЯ секция сайта,
+     панели никогда не нужно "отпускаться" обратно в обычный поток:
+     дальше просто некуда скроллить. Это заодно обходит баг Chromium,
+     когда position:sticky/relative + transform на одном элементе
+     раздувает document.scrollHeight (у элементов в потоке transform
+     расширяет scrollable overflow предка) — position:fixed из потока
+     полностью исключён и этой проблемы не создаёт. -->
+<script>
+(function(){
+  var pinEl    = document.getElementById('faq');
+  var spacerEl = document.getElementById('curtainSpacer');
+  var nextEl   = document.getElementById('curtainNext');
+  var headerEl = document.getElementById('siteHeader');
+  if(!pinEl || !spacerEl || !nextEl) return;
+
+  var headerHidden = false;
+
+  function ease(t){
+    return t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2) / 2;
+  }
+
+  var HOLD_RATIO  = 0.4; // доля vh на "ожидание" перед наездом — меньше = меньше скролла
+  var SLIDE_RATIO = 0.45; // доля vh на сам наезд — меньше = быстрее и короче
+  var vh = 0, trackTop = 0, holdDist = 0, slideDist = 0, releaseDist = 0, totalTrack = 0;
+  var lastY = null;
+
+  // naturalH передаётся снаружи (см. ниже) — он приходит либо из
+  // ResizeObserver-колбэка на nextEl (безопасный момент чтения, браузер сам
+  // вызывает его уже после пересчёта layout), либо из rAF-фолбэка. Здесь
+  // остаётся только getBoundingClientRect() на pinEl — но вызывается эта
+  // функция ТОЛЬКО из тех же безопасных точек (ResizeObserver/rAF), никогда
+  // напрямую из середины произвольного кода сразу после записи стилей.
+  function recomputeCurtain(naturalH){
+    vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+
+    var scrollYNow = window.scrollY || window.pageYOffset;
+    trackTop = pinEl.getBoundingClientRect().top + scrollYNow;
+
+    slideDist   = vh * SLIDE_RATIO;
+    holdDist    = vh * HOLD_RATIO;
+    releaseDist = Math.max(0, naturalH - vh);
+    totalTrack  = holdDist + slideDist + releaseDist;
+    spacerEl.style.height = totalTrack + 'px';
+
+    updatePosition(scrollYNow);
+  }
+
+  function updatePosition(scrollY){
+    var raw = scrollY - trackTop;
+    var y;
+
+    if(raw <= holdDist){
+      y = vh;
+    } else if(raw <= holdDist + slideDist){
+      var slideT = (raw - holdDist) / slideDist;
+      y = (1 - ease(Math.max(0, Math.min(1, slideT)))) * vh;
+    } else {
+      var into = Math.max(0, Math.min(releaseDist, raw - holdDist - slideDist));
+      y = -into;
+    }
+
+    // Пока пользователь стоит на месте (или доскроллил до предела), y кадр от
+    // кадра не меняется — раньше это всё равно писало transform/opacity 60
+    // раз в секунду вхолостую. Пропускаем запись стилей, если позиция та же.
+    if(y === lastY) return;
+    lastY = y;
+
+    nextEl.style.transform = 'translateY(' + y + 'px)';
+
+    // хедер плавно исчезает, когда панель почти/полностью наехала —
+    // и появляется обратно при обратном скролле вверх
+    if(headerEl){
+      var fadeSpan = Math.max(1, vh * 0.5);
+      var headerOpacity = Math.max(0, Math.min(1, y / fadeSpan));
+      var shouldHide = headerOpacity <= 0.02;
+      if(shouldHide !== headerHidden){
+        headerEl.style.visibility = shouldHide ? 'hidden' : 'visible';
+        headerEl.style.pointerEvents = shouldHide ? 'none' : '';
+        headerHidden = shouldHide;
+      }
+      headerEl.style.opacity = headerOpacity;
+    }
+  }
+
+  // tick(scrollY) вызывается общим координатором ниже — см. комментарий
+  // в hero-скрипте выше про единый requestAnimationFrame на всю страницу.
+  function tick(scrollY){
+    updatePosition(scrollY);
+  }
+  window.__curtainTick = tick;
+
+  // Все кнопки/ссылки "Записаться" ведут на href="#contacts". Но #contacts —
+  // это обёртка вокруг #curtainNext, а он position:fixed и не занимает места
+  // в потоке, поэтому САМА секция #contacts в документе схлопнута и физически
+  // находится в самом конце дорожки прокрутки (после hold+slide+release).
+  // Обычный переход по якорю (браузер сам скроллит к #contacts) поэтому
+  // приземляет пользователя не на форму записи (она вверху панели, видна
+  // сразу после slide-фазы), а в САМЫЙ низ футера — на мобильных, где футер
+  // выше экрана (есть release-фаза), это выглядит как "форма не открывается":
+  // видно подвал с копирайтом, а не поля формы. На десктопе, где футер
+  // помещается в экран целиком (release не требуется), это не так заметно —
+  // поэтому баг проявлялся именно "в мобильной версии".
+  // Исправление: перехватываем клики по любым a[href="#contacts"] и скроллим
+  // ровно к моменту "панель полностью надвинулась" (raw = holdDist+slideDist,
+  // y=0) — то есть к началу видимого содержимого формы, а не к концу футера.
+  window.__scrollToContactsForm = function(){
+    if(holdDist === 0 && slideDist === 0){
+      // геометрия ещё не посчиталась (ResizeObserver не успел сработать) —
+      // резервный вариант: обычный переход к секции.
+      var el = document.getElementById('contacts');
+      if(el) el.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    window.scrollTo({ top: trackTop + holdDist + slideDist, behavior: 'smooth' });
+  };
+  document.addEventListener('click', function(e){
+    var link = e.target.closest ? e.target.closest('a[href="#contacts"]') : null;
+    if(!link) return;
+    e.preventDefault();
+    window.__scrollToContactsForm();
+  });
+
+  // naturalH (высота #curtainNext) отслеживаем через ResizeObserver вместо
+  // опроса offsetHeight — колбэк ResizeObserver браузер вызывает сам и
+  // гарантированно уже после пересчёта layout, поэтому чтение внутри него
+  // не может форсировать синхронную компоновку (в отличие от вызова
+  // offsetHeight сразу после записи стилей из нашего кода).
+  var lastNaturalH = 0;
+  if(window.ResizeObserver){
+    new ResizeObserver(function(){
+      lastNaturalH = nextEl.getBoundingClientRect().height;
+      recomputeCurtain(lastNaturalH);
+    }).observe(nextEl);
+  } else {
+    // Фолбэк для браузеров без ResizeObserver: как и раньше, но и первое, и
+    // все последующие чтения — только через requestAnimationFrame.
+    var curtainFallbackMeasure = function(){
+      lastNaturalH = nextEl.offsetHeight;
+      recomputeCurtain(lastNaturalH);
+    };
+    requestAnimationFrame(curtainFallbackMeasure);
+  }
+
+  // Ширина/высота вьюпорта (vh, trackTop) может смениться и без изменения
+  // собственной высоты #curtainNext (например, чисто горизонтальный resize
+  // или сдвиг блоков выше по странице) — на этот случай отдельно слушаем
+  // resize и пересчитываем той же функцией, тоже через rAF, с уже известным
+  // (закешированным) naturalH.
+  var resizeTimer;
+  function handleResize(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function(){
+      requestAnimationFrame(function(){ recomputeCurtain(lastNaturalH); });
+    }, 150);
+  }
+  window.addEventListener('resize', handleResize);
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize', handleResize);
+  }
+})();
+</script>
+
+<!-- ══════════════ ОБЩИЙ КООРДИНАТОР СКРОЛЛ-АНИМАЦИЙ ══════════════
+     Раньше hero- и curtain-скрипты выше каждый крутили свой собственный
+     requestAnimationFrame и сами читали window.scrollY. Так как оба rAF
+     выполняются в одном и том же кадре друг за другом, чтение scrollY во
+     втором цикле попадало сразу после записи стилей в первом — браузер был
+     вынужден синхронно пересчитывать layout (Lighthouse: "Принудительная
+     компоновка"). Здесь — один общий цикл: scrollY читается один раз за
+     кадр, до всех записей стилей, и передаётся обоим эффектам.
+
+     Раньше этот цикл крутился requestAnimationFrame'ом БЕСКОНЕЧНО, даже
+     когда страница просто лежит неподвижно — то есть каждый кадр (60 раз
+     в секунду) писал transform/opacity вхолостую. Из-за этого фонового
+     "шума" любое чтение геометрии в другом месте (например vh-фикс при
+     ресайзе) чаще попадало сразу после чужой записи стиля и заставляло
+     браузер пересчитывать layout синхронно — это и накапливалось в
+     Lighthouse как возросшая "Принудительная компоновка". Теперь цикл
+     запускается по событию scroll и сам себя останавливает, как только
+     hero-эффект сообщает, что инерционная доводка завершилась (curtain
+     мгновенный, доводки не требует) — поведение анимаций не меняется,
+     просто rAF не крутится вхолостую, когда пользователь не скроллит. -->
+<script>
+(function(){
+  var running = false;
+  function tick(){
+    var scrollY = window.scrollY || window.pageYOffset;
+    var heroStillEasing = window.__heroTick ? window.__heroTick(scrollY) : false;
+    if(window.__curtainTick) window.__curtainTick(scrollY);
+    if(heroStillEasing){
+      requestAnimationFrame(tick);
+    } else {
+      running = false;
+    }
+  }
+  function ensureRunning(){
+    if(!running){
+      running = true;
+      requestAnimationFrame(tick);
+    }
+  }
+  window.addEventListener('scroll', ensureRunning, { passive:true });
+  ensureRunning(); // один проход сразу при загрузке — выставить корректное начальное состояние
+})();
+</script>
+
+<!-- ══════════════ МОДАЛКА "ПОЛНЫЙ ПРАЙС" ══════════════ -->
+<div class="modal-overlay" id="priceModalOverlay" onclick="if(event.target===this)closePriceModal();">
+  <div class="modal-box glass" role="dialog" aria-modal="true" aria-labelledby="priceModalTitle">
+    <button type="button" class="modal-close" onclick="closePriceModal()" aria-label="Закрыть">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <div class="modal-logo">
+      <span class="modal-logo-pulse"></span>
+      <svg width="54" height="54" viewBox="0 0 34 34" fill="none">
+        <circle cx="17" cy="17" r="17" fill="url(#lgModal)"/>
+        <path d="M17 9c-2.2 0-3.6 1-5 1-1.6 0-2.5 1.3-2.5 3.2 0 2.6 1.3 6.5 2.3 8.7.7 1.6 1.3 2.6 2.3 2.6.9 0 1.1-.8 1.4-2.3.3-1.5.5-2.6 1.5-2.6s1.2 1.1 1.5 2.6c.3 1.5.5 2.3 1.4 2.3 1 0 1.6-1 2.3-2.6 1-2.2 2.3-6.1 2.3-8.7 0-1.9-.9-3.2-2.5-3.2-1.4 0-2.8-1-5-1z" fill="#fff" opacity="0.93"/>
+        <defs><linearGradient id="lgModal" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse"><stop stop-color="#4EA8FF"/><stop offset="1" stop-color="#1F6FD6"/></linearGradient></defs>
+      </svg>
+    </div>
+    <h3 id="priceModalTitle">Получить полный прайс</h3>
+    <p>Оставьте имя и номер телефона — пришлём полный прайс на 120+ услуг в мессенджер в течение 15 минут.</p>
+    <!-- TODO: форма не подключена к бэкенду — сейчас только показывает alert(). Нужно добавить action/обработчик отправки перед деплоем -->
+    <form class="cta-form modal-form" onsubmit="event.preventDefault();closePriceModal();alert('Заявка отправлена! Прайс придёт вам в мессенджер.');">
+      <input type="text" placeholder="Ваше имя" required>
+      <input type="tel" placeholder="+380 __ ___ __ __" required>
+      <button type="submit" class="btn btn-primary">Отправить</button>
+      <div class="cta-note">Нажимая кнопку, вы соглашаетесь с политикой обработки данных</div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════ МОДАЛКА "ЗАПИСЬ НА УСЛУГУ" (общая для карточек услуг) ══════════════ -->
+<div class="modal-overlay" id="serviceModalOverlay" onclick="if(event.target===this)closeServiceModal();">
+  <div class="modal-box glass" role="dialog" aria-modal="true" aria-labelledby="serviceModalTitle">
+    <button type="button" class="modal-close" onclick="closeServiceModal()" aria-label="Закрыть">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <div class="modal-logo">
+      <span class="modal-logo-pulse"></span>
+      <svg width="54" height="54" viewBox="0 0 34 34" fill="none">
+        <circle cx="17" cy="17" r="17" fill="url(#lgModalSvc)"/>
+        <path d="M17 9c-2.2 0-3.6 1-5 1-1.6 0-2.5 1.3-2.5 3.2 0 2.6 1.3 6.5 2.3 8.7.7 1.6 1.3 2.6 2.3 2.6.9 0 1.1-.8 1.4-2.3.3-1.5.5-2.6 1.5-2.6s1.2 1.1 1.5 2.6c.3 1.5.5 2.3 1.4 2.3 1 0 1.6-1 2.3-2.6 1-2.2 2.3-6.1 2.3-8.7 0-1.9-.9-3.2-2.5-3.2-1.4 0-2.8-1-5-1z" fill="#fff" opacity="0.93"/>
+        <defs><linearGradient id="lgModalSvc" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse"><stop stop-color="#4EA8FF"/><stop offset="1" stop-color="#1F6FD6"/></linearGradient></defs>
+      </svg>
+    </div>
+    <h3 id="serviceModalTitle">Записаться на услугу</h3>
+    <p id="serviceModalText">Оставьте имя и номер телефона — администратор перезвонит и подберёт удобное время.</p>
+    <!-- TODO: форма не подключена к бэкенду — сейчас только показывает alert(). Нужно добавить action/обработчик отправки перед деплоем -->
+    <form class="cta-form modal-form" onsubmit="event.preventDefault();closeServiceModal();alert('Заявка отправлена! Мы свяжемся с вами в ближайшее время.');">
+      <input type="text" placeholder="Ваше имя" required>
+      <input type="tel" placeholder="+380 __ ___ __ __" required>
+      <button type="submit" class="btn btn-primary">Записаться</button>
+      <div class="cta-note">Нажимая кнопку, вы соглашаетесь с политикой обработки данных</div>
+    </form>
+  </div>
+</div>
+
+<script>
+  var openModalCount = 0;
+
+  function lockModalScroll(){
+    if(openModalCount === 0){
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden';
+    }
+    openModalCount++;
+  }
+  function unlockModalScroll(){
+    openModalCount = Math.max(0, openModalCount - 1);
+    if(openModalCount === 0){
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+    }
+  }
+
+  function openPriceModal(e){
+    if(e) e.preventDefault();
+    var overlay = document.getElementById('priceModalOverlay');
+    if(!overlay) return;
+    lockModalScroll();
+    overlay.classList.add('open');
+  }
+  function closePriceModal(){
+    var overlay = document.getElementById('priceModalOverlay');
+    if(!overlay || !overlay.classList.contains('open')) return;
+    overlay.classList.remove('open');
+    unlockModalScroll();
+  }
+
+  function openServiceModal(e, title, desc){
+    if(e) e.preventDefault();
+    var overlay = document.getElementById('serviceModalOverlay');
+    if(!overlay) return;
+    var titleEl = document.getElementById('serviceModalTitle');
+    var textEl  = document.getElementById('serviceModalText');
+    if(titleEl) titleEl.textContent = 'Записаться: ' + title;
+    if(textEl && desc) textEl.textContent = desc + ' Оставьте имя и номер — перезвоним и подберём время.';
+    lockModalScroll();
+    overlay.classList.add('open');
+  }
+  function closeServiceModal(){
+    var overlay = document.getElementById('serviceModalOverlay');
+    if(!overlay || !overlay.classList.contains('open')) return;
+    overlay.classList.remove('open');
+    unlockModalScroll();
+  }
+
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){
+      closePriceModal();
+      closeServiceModal();
+    }
+  });
+</script>
+
+<!-- ══════════════ КАСТОМНЫЙ КУРСОР ══════════════ -->
+<img decoding="async" width="168" height="165" id="customCursor" data-src="images/cursor.png" alt="">
+<script>
+(function(){
+  if(!window.matchMedia || !window.matchMedia('(hover:hover) and (pointer:fine)').matches) return;
+  var cur = document.getElementById('customCursor');
+  if(!cur) return;
+
+  var x = -100, y = -100, shown = false;
+
+  document.addEventListener('mousemove', function(e){
+    x = e.clientX; y = e.clientY;
+    if(!shown){ cur.classList.add('is-visible'); shown = true; }
+  }, { passive:true });
+
+  document.addEventListener('mouseleave', function(){
+    cur.classList.remove('is-visible');
+    shown = false;
+  });
+
+  function frame(){
+    cur.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  // лёгкое увеличение над кликабельными элементами
+  var selector = 'a, button, input, textarea, select, [role="button"], .faq-q, label, .soc-btn';
+  document.addEventListener('mouseover', function(e){
+    if(e.target.closest(selector)) cur.classList.add('is-hover');
+  });
+  document.addEventListener('mouseout', function(e){
+    if(e.target.closest(selector)) cur.classList.remove('is-hover');
+  });
+})();
+</script>
+
+
+<!-- ══════════════ ЗАГРУЗКА МЕДИА ══════════════
+     Все фото и видео лежат отдельными файлами (images/, video/), поэтому
+     картинками занимается сам браузер через родной loading="lazy" — раньше
+     это не работало: у base64 в data:URI нечего откладывать, они уже внутри
+     HTML. Здесь остались только две вещи, которые браузер сам не решит. -->
+<script>
+(function(){
+  // 1. Видео hero. В разметке стоит preload="none", чтобы его загрузка не
+  //    конкурировала за канал с первой отрисовкой. Включаем уже после неё:
+  //    скролл-эффекту нужны длительность и возможность перематывать кадры.
+  function loadVideo(){
+    var v = document.getElementById('bg-video');
+    if(!v) return;
+    v.preload = 'auto';
+    v.load();
+  }
+
+  // 2. Курсор. Он либо display:none (тач-устройства), либо висит за экраном
+  //    с opacity:0 — грузим картинку только там, где курсор вообще нужен,
+  //    по тому же условию, что и в CSS. На телефонах эти 14 КБ не качаются.
+  function loadCursor(){
+    var cur = document.getElementById('customCursor');
+    if(!cur || !cur.dataset.src) return;
+    if(window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches){
+      cur.src = cur.dataset.src;
+    }
+  }
+
+  function start(){ loadVideo(); loadCursor(); }
+  if(document.readyState === 'complete') start();
+  else window.addEventListener('load', start);
+})();
+</script>
+
+</body>
+</html>
